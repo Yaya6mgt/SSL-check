@@ -1,0 +1,32 @@
+{
+  "name": "ssl-check",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node -r tsconfig-paths/register src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yaya6mgt/SSL-check.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Yaya6mgt/SSL-check/issues"
+  },
+  "homepage": "https://github.com/Yaya6mgt/SSL-check#readme",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "tls": "^0.0.1",
+    "tsconfig-paths": "^4.2.0"
+  }
+}
