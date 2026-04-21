@@ -9,9 +9,24 @@ export class Domain extends Model {
 }
 
 Domain.init({
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  hostname: { type: DataTypes.STRING, allowNull: false, unique: true },
-}, { sequelize, modelName: 'domain' });
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  hostname: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  serverId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+}, {
+  sequelize,
+  tableName: 'domains'
+});
 
 Server.hasMany(Domain);
 Domain.belongsTo(Server);

@@ -32,6 +32,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.4.2",
     "module-alias": "^2.3.4",
     "mysql2": "^3.22.2",
