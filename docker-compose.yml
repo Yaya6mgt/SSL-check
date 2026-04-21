@@ -1,0 +1,6 @@
+services:
+  ssl-monitor:
+    build: .
+    container_name: ssl-monitor-app
+    restart: always
+    env_file: .env
