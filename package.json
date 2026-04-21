@@ -22,10 +22,12 @@
   "homepage": "https://github.com/Yaya6mgt/SSL-check#readme",
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "@types/node-cron": "^3.0.11",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "node-cron": "^4.2.1",
     "tls": "^0.0.1",
     "tsconfig-paths": "^4.2.0"
   }

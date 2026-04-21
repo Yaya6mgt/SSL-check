@@ -1,7 +1,5 @@
-import { checkCertificate } from '@/engine/ssl';
+import { initScheduler } from '@/engine/scheduler';
 
-const testDomain = "cloud-elearning.com";
+console.log("Moniteur SSL démarré");
 
-checkCertificate(testDomain)
-    .then(() => console.log("Test réussi !"))
-    .catch(err => console.error("Erreur de connexion :", err.message));
+initScheduler();
