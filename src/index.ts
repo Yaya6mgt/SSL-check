@@ -1,6 +1,11 @@
 import 'module-alias/register';
 import { initScheduler } from '@/engine/scheduler';
+import { connectDB } from './config/db';
 
-console.log("Moniteur SSL démarré");
+async function startApp() {
+  console.log("Moniteur SSL démarré");
+  await connectDB();
+  initScheduler();
+}
 
-initScheduler();
+startApp();

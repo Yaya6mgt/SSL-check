@@ -1,6 +1,35 @@
 services:
+  db:
+    image: mysql:8.0
+    container_name: ssl-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$DB_USER", "-p$$DB_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   ssl-monitor:
     build: .
     container_name: ssl-monitor-app
-    restart: always
-    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    restart: on-failure
+
+volumes:
+  db_data:

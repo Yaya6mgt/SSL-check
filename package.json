@@ -26,13 +26,17 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@types/node-cron": "^3.0.11",
+    "@types/validator": "^13.15.10",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "module-alias": "^2.3.4",
+    "mysql2": "^3.22.2",
     "node-cron": "^4.2.1",
+    "sequelize": "^6.37.8",
     "tls": "^0.0.1",
     "tsconfig-paths": "^4.2.0"
   }
