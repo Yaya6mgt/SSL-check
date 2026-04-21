@@ -6,16 +6,18 @@ import { SslCheck } from '@/models/SslCheck';
 export async function runMonitoringCycle() {
     console.log(`\nDémarrage du cycle : ${new Date().toLocaleString()}`);
 
-    const domains = await Domain.findAll();
+    const domains = await Domain.findAll({ raw: true });
 
     if (domains.length === 0) {
-        console.log("Aucun domaine trouvé en base de données. Vérifiez l'import CSV.");
+        console.log("Aucun domaine trouvé en base de données.");
         return;
     }
 
     for (const domain of domains) {
         try {
-            console.log(`Scan en cours : ${domain.hostname}`);
+            const host = domain.hostname;
+
+            console.log(`Scan en cours : ${host}`);
             const result = await checkCertificate(domain.hostname);
 
             await SslCheck.create({
@@ -42,14 +44,11 @@ export async function runMonitoringCycle() {
             console.error(`Échec pour ${domain.hostname} : ${error.message}`);
         }
     }
-    console.log('Cycle de vérification terminé.\n');
 }
 
 export function initScheduler() {
-    console.log("Automatisation du Moniteur SSL initialisée");
-
+    console.log("Automatisation initialisée");
     runMonitoringCycle();
-
     cron.schedule('*/1 * * * *', async () => {
         await runMonitoringCycle();
     });

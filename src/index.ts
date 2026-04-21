@@ -1,6 +1,5 @@
 import 'module-alias/register';
 import fs from 'fs';
-import path from 'path/win32';
 import { initScheduler } from '@/engine/scheduler';
 import { connectDB } from './config/db';
 import { importCsvData } from './services/import.service';

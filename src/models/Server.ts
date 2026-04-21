@@ -1,28 +1,17 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '@/config/db';
+import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { Domain } from './Domain';
 
+@Table({ tableName: 'servers', underscored: true })
 export class Server extends Model {
+  @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
   declare id: number;
-  declare name: string;
-  declare ipAddress: string;
-}
 
-Server.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  ipAddress: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: { isIP: true }
-  },
-}, {
-  sequelize,
-  tableName: 'servers'
-});
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare name: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare ipAddress: string;
+
+  @HasMany(() => Domain)
+  declare domains: Domain[];
+}

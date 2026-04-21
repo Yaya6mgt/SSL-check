@@ -1,32 +1,22 @@
-import { DataTypes, Model } from "sequelize";
-import { Server } from "./Server";
-import { sequelize } from '@/config/db';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { Server } from './Server';
+import { SslCheck } from './SslCheck';
 
+@Table({ tableName: 'domains', underscored: true })
 export class Domain extends Model {
-  public id!: number;
-  public hostname!: string;
-  public serverId!: number;
+  @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
+  declare id: number;
+
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  declare hostname: string;
+
+  @ForeignKey(() => Server)
+  @Column({ type: DataType.INTEGER, allowNull: true })
+  declare serverId: number;
+
+  @BelongsTo(() => Server)
+  declare server: Server;
+
+  @HasMany(() => SslCheck)
+  declare checks: SslCheck[];
 }
-
-Domain.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  hostname: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  serverId: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-}, {
-  sequelize,
-  tableName: 'domains'
-});
-
-Server.hasMany(Domain);
-Domain.belongsTo(Server);

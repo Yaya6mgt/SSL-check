@@ -1,24 +1,30 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '@/config/db';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Domain } from './Domain';
 
+@Table({ tableName: 'ssl_checks', underscored: true })
 export class SslCheck extends Model {
+  @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
   declare id: number;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false })
   declare isValid: boolean;
-  declare validTo: Date | null;
-  declare issuer: string | null;
-  declare errorMessage: string | null;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  declare validTo: Date;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare issuer: string;
+
+  @Column({ type: DataType.TEXT, allowNull: true })
+  declare errorMessage: string;
+
+  @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare lastCheck: Date;
+
+  @ForeignKey(() => Domain)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare domainId: number;
+
+  @BelongsTo(() => Domain)
+  declare domain: Domain;
 }
-
-SslCheck.init({
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  isValid: { type: DataTypes.BOOLEAN, allowNull: false },
-  validTo: { type: DataTypes.DATE, allowNull: true },
-  issuer: { type: DataTypes.STRING, allowNull: true },
-  errorMessage: { type: DataTypes.TEXT, allowNull: true },
-  lastCheck: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-}, { sequelize, tableName: 'ssl_checks' });
-
-Domain.hasMany(SslCheck, { foreignKey: 'domainId', as: 'checks' });
-SslCheck.belongsTo(Domain, { foreignKey: 'domainId' });
