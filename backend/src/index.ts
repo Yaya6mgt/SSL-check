@@ -1,4 +1,3 @@
-import 'module-alias/register';
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -6,6 +5,7 @@ import { initScheduler } from '@/engine/scheduler';
 import { connectDB } from './config/db';
 import { importCsvData } from './services/import.service';
 import domainRoutes from './routes/domain.routes';
+import serverRoutes from './routes/server.routes';
 
 const app = express();
 app.use(cors());
@@ -32,6 +32,7 @@ async function startApp() {
     initScheduler();
 
     app.use('/api/domains', domainRoutes);
+    app.use('/api/servers', serverRoutes);
 
     app.listen(PORT, () => {
         console.log(`Serveur hybride prêt sur le port ${PORT}`);

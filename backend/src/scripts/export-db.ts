@@ -1,4 +1,3 @@
-import 'module-alias/register';
 import 'reflect-metadata';
 import { sequelize, connectDB } from '@/config/db';
 import { exportStatusToCsv } from '@/services/export.service';

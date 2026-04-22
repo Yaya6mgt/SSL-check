@@ -22,6 +22,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: build
     container_name: ssl-monitor-app
     depends_on:
       db:
@@ -29,7 +30,10 @@ services:
     env_file: .env
     restart: on-failure
     volumes:
-      - ./data:/app/data
+        - ./backend:/app
+        - /app/node_modules
+        - ./data:/app/data
+    command: npm run dev
     ports:
       - "3000:3000"
 
@@ -39,7 +43,7 @@ services:
       dockerfile: Dockerfile
     container_name: ssl-frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - ssl-monitor
     restart: always
