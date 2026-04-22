@@ -12,6 +12,9 @@ export class Server extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   declare ipAddress: string;
 
-  @HasMany(() => Domain)
+  @HasMany(() => Domain, {
+    onDelete: 'CASCADE',
+    hooks: true
+  })
   declare domains: Domain[];
 }

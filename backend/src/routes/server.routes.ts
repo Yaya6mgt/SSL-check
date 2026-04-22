@@ -42,4 +42,31 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.post('/', async (req, res) => {
+  try {
+    const { name, ipAddress } = req.body;
+    if (!name || !ipAddress) {
+      return res.status(400).json({ error: "Nom et IP requis" });
+    }
+    const newServer = await Server.create({ name, ipAddress });
+    res.status(201).json(newServer);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Server.destroy({ where: { id } });
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: "Serveur non trouvé" });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

@@ -19,10 +19,14 @@ module.exports = {
         // Basic colors
         primary: {
           DEFAULT:'hsl(0, 0%, 21%)',
+          hover: 'hsl(0, 0%, 18%)',
+          active: 'hsl(0, 0%, 15%)',
         },
 
         secondary: {
           DEFAULT: 'hsl(345, 84%, 44%)',
+          hover: 'hsl(345, 84%, 40%)',
+          active: 'hsl(345, 84%, 36%)',
         },
 
         // Functional colors
