@@ -1,11 +1,14 @@
 import 'module-alias/register';
 import express from 'express';
+import cors from 'cors';
 import fs from 'fs';
 import { initScheduler } from '@/engine/scheduler';
 import { connectDB } from './config/db';
 import { importCsvData } from './services/import.service';
+import domainRoutes from './routes/domain.routes';
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -28,9 +31,7 @@ async function startApp() {
     }
     initScheduler();
 
-    app.get('/api/health', (req, res) => {
-        res.json({ status: 'OK', message: 'SSL Monitor API is running' });
-    });
+    app.use('/api/domains', domainRoutes);
 
     app.listen(PORT, () => {
         console.log(`Serveur hybride prêt sur le port ${PORT}`);
