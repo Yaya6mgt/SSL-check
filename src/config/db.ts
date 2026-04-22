@@ -3,6 +3,7 @@ import { Server } from '@/models/Server';
 import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
 import { Alert } from '@/models/Alert';
+import { Recipient } from '@/models/Recipients';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,7 +15,7 @@ export const sequelize = new Sequelize({
   username: process.env.DB_USER!,
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
-  models: [Server, Domain, SslCheck, Alert],
+  models: [Server, Domain, SslCheck, Alert, Recipient],
   logging: false,
   define: {
     underscored: true,

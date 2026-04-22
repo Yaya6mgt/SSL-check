@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Alert } from '@/models/Alert';
 import { getAlertThreshold } from '@/utils/health-status';
+import { Recipient } from '@/models/Recipients';
 
 export class NotificationService {
     private static transporter = nodemailer.createTransport({
@@ -44,7 +45,11 @@ export class NotificationService {
     static async sendBulkAlerts(alerts: any[]) {
         if (alerts.length === 0) return;
 
-        const adminEmail = process.env.ADMIN_EMAIL || "admin-test@onlineformapro.com";
+        const dbRecipients = await Recipient.findAll({ where: { isActive: true } });
+        let emailList = dbRecipients.map(r => r.email);
+        if (emailList.length === 0) {
+            emailList = [process.env.ADMIN_EMAIL || "admin-default@onlineformapro.com"];
+        }
         const templatePath = path.join(__dirname, '..', 'templates', 'alert-email.html');
 
         try {
@@ -64,7 +69,7 @@ export class NotificationService {
 
             await this.transporter.sendMail({
                 from: '"SSL Monitor Onlineformapro" <noreply@onlineformapro.com>',
-                to: adminEmail,
+                to: emailList.join(', '),
                 subject: `Récapitulatif alertes SSL - ${alerts.length} domaine(s)`,
                 html: htmlContent,
             });
