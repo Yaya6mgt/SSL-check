@@ -7,6 +7,7 @@ export interface SSLCheckResult {
     daysRemaining: number;
     issuer: string;
     sans: string[];
+    isValid: boolean;
 }
 
 export function checkCertificate(host: string): Promise<SSLCheckResult> {
@@ -33,7 +34,8 @@ export function checkCertificate(host: string): Promise<SSLCheckResult> {
                 validTo: validTo,
                 daysRemaining: daysRemaining,
                 issuer: String(cert.issuer.O) || "Inconnu",
-                sans: parseSANs(cert.subjectaltname)
+                sans: parseSANs(cert.subjectaltname),
+                isValid: true
             };
 
             socket.end();
