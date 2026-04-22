@@ -43,6 +43,7 @@ export async function runMonitoringCycle() {
 export function initScheduler() {
     console.log("Automatisation initialisée");
     runMonitoringCycle();
+    // 0 8 * * * pour tous les jours à 8h du matin
     cron.schedule('*/1 * * * *', async () => {
         await runMonitoringCycle();
     });
