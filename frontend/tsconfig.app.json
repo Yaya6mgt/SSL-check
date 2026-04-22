@@ -24,7 +24,10 @@
     "baseUrl": "./",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["dist/*", "src/*"]
+      "@/*": ["dist/*", "src/*"],
+      "tailwind.config": [
+        "./tailwind.config.js"
+      ]
     },
   },
   "include": ["src"]
