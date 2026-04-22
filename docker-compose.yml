@@ -33,5 +33,16 @@ services:
     ports:
       - "3000:3000"
 
+  ssl-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ssl-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - ssl-monitor
+    restart: always
+
 volumes:
   db_data:
