@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
-import type { Domain } from '@/type/domain.type';
-import type { Server } from '@/type/server.type';
+import type { Domain } from '@/types/domain.type';
+import type { IServer } from '@/types/server.type';
 import { ApiError, apiFetch } from '@/utils/api';
 
 export default function ServerDetail() {
   const { id } = useParams();
-  const [server, setServer] = useState<Server | null>(null);
+  const [server, setServer] = useState<IServer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     const fetchServer = async () => {
       try {
-        const data = await apiFetch<Server>(`servers/${id}`);
+        const data = await apiFetch<IServer>(`servers/${id}`);
         setServer(data);
       } catch (err) {
         if (err instanceof ApiError) {

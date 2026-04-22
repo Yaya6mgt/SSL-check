@@ -1,6 +1,6 @@
 import type { Domain } from "./domain.type";
 
-export interface Server {
+export interface IServer {
     id: number;
     name: string;
     ipAddress: string;

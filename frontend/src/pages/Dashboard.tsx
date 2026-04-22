@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
-import type { Server } from '@/type/server.type';
-import type { Domain } from '@/type/domain.type';
+import type { IServer } from '@/types/server.type';
+import type { Domain } from '@/types/domain.type';
 import { ApiError, apiFetch } from '@/utils/api';
+import { ServerHealthBar } from '@/components/ServerHealthbar';
+import { Server } from 'lucide-react';
 
 export default function Dashboard() {
-  const [servers, setServers] = useState<Server[]>([]);
+  const [servers, setServers] = useState<IServer[]>([]);
 
   useEffect(() => {
     const fetchServers = async () => {
       try {
-        const data = await apiFetch<Server[]>(`servers`);
+        const data = await apiFetch<IServer[]>(`servers`);
         setServers(data);
       } catch (err) {
         if (err instanceof ApiError) {
@@ -46,20 +48,23 @@ export default function Dashboard() {
           return (
             <Link to={`/server/${server.id}`} key={server.id}
                   className="block p-6 bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold text-slate-800">{server.name}</h2>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${config.bg}`}>
+                  <Server size={20} className={config.color} />
+                </div>
+                <h2 className="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                  {server.name}
+                </h2>
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${config.bg} ${config.color}`}>
                   {config.label}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mt-2">
                 <p className="text-sm text-slate-500">IP: {server.ipAddress}</p>
                 <p className="text-sm font-medium text-slate-700">
                   {(server.domains || []).length} domaine(s) surveillé(s)
                 </p>
-                <div className="w-full bg-slate-100 h-2 rounded-full mt-4">
-                   <div className={`h-2 rounded-full ${config.bg.replace('100', '500')}`} style={{width: '100%'}}></div>
-                </div>
+                <ServerHealthBar domains={serverDomains} />
               </div>
             </Link>
           );
