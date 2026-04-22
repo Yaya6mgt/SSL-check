@@ -1,4 +1,4 @@
-import { parseSANs } from '../../src/utils/ssl-parser';
+import { parseSANs } from '@/utils/ssl-parser';
 
 describe('ssl-parser utility', () => {
   it('doit extraire les DNS correctement', () => {
