@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { Server } from '@/models/Server';
 import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
+import { Alert } from '@/models/Alert';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,7 +14,7 @@ export const sequelize = new Sequelize({
   username: process.env.DB_USER!,
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
-  models: [Server, Domain, SslCheck],
+  models: [Server, Domain, SslCheck, Alert],
   logging: false,
   define: {
     underscored: true,
@@ -21,13 +22,23 @@ export const sequelize = new Sequelize({
   }
 });
 
-export const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
-    console.log('Connexion à la BDD MySQL réussie avec Sequelize-Typescript.');
-  } catch (error) {
-    console.error('Impossible de se connecter à la BDD :', error);
-    process.exit(1);
-  }
-};
+export async function connectDB() {
+    let connected = false;
+    let attempts = 0;
+
+    while (!connected && attempts < 10) {
+        try {
+            await sequelize.authenticate();
+            console.log('Connexion à MySQL réussie !');
+            connected = true;
+        } catch (error) {
+            attempts++;
+            console.log(`Attente de MySQL (tentative ${attempts}/10)...`);
+            await new Promise(res => setTimeout(res, 5000));
+        }
+    }
+
+    if (!connected) {
+        throw new Error("Impossible de se connecter à la base de données après 10 tentatives.");
+    }
+}

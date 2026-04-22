@@ -10,6 +10,8 @@ COPY . .
 
 RUN npm run build
 
+RUN cp -r src/templates dist/src/templates
+
 FROM node:24-alpine AS production
 
 WORKDIR /app
