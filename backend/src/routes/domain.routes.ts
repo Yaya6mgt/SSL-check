@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
 import { Server } from '@/models/Server';
-import { checkCertificate } from '@/engine/ssl';
 import { performAndSaveSslCheck } from '@/services/ssl.service';
+import multer from 'multer';
+import { importCsvData } from '@/services/import.service';
+import { generateDomainsCsv } from '@/services/export.service';
 
 const router = Router();
 
@@ -120,6 +122,34 @@ router.delete('/:id', async (req, res) => {
     }
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+const upload = multer({ dest: 'uploads/' });
+
+router.post('/import', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Aucun fichier fourni" });
+
+    await importCsvData(req.file.path);
+    res.json({ message: "Importation réussie" });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/export', async (req, res) => {
+  try {
+    const csvData = await generateDomainsCsv();
+
+    const fileName = `export-monitoring-${new Date().toISOString().split('T')[0]}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    return res.status(200).send(csvData);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de l'export" });
   }
 });
 

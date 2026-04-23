@@ -1,35 +1,47 @@
-import fs from 'fs';
 import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
+import { Server } from '@/models/Server';
 
-export const exportStatusToCsv = async (outputPath: string) => {
-    try {
-        const domains = await Domain.findAll({
-            include: [{
-                model: SslCheck,
-                limit: 1,
-                order: [['last_check', 'DESC']]
-            }]
-        });
+export const generateDomainsCsv = async () => {
+  try {
+    const domains = await Domain.findAll({
+      include: [
+          {
+            model: Server,
+            as: 'server'
+          },
+          {
+            model: SslCheck,
+            as: 'checks',
+            limit: 1,
+            order: [['lastCheck', 'DESC']]
+          }
+      ]
+    });
 
-        let csvContent = 'hostname,status,valid_to,issuer,last_check,error_message\n';
+    const headers = ['Hostname', 'Serveur', 'IP', 'Statut', 'Expiration', 'Emetteur', 'Dernier Check', 'Erreur'];
+    let csvContent = headers.join(',') + '\n';
 
-        for (const domain of domains) {
-            const lastCheck = domain.checks?.[0];
-            const hostname = domain.hostname;
-            const status = lastCheck ? (lastCheck.isValid ? 'VALIDE' : 'ERREUR') : 'NON_SCANNE';
-            const validTo = lastCheck?.validTo ? lastCheck.validTo.toISOString() : 'N/A';
-            const issuer = lastCheck?.issuer || 'N/A';
-            const lastCheckDate = lastCheck?.lastCheck ? lastCheck.lastCheck.toLocaleString() : 'N/A';
-            const error = lastCheck?.errorMessage ? lastCheck.errorMessage.replace(/,/g, ' ') : '';
+    for (const domain of domains) {
+      const lastCheck = domain.checks?.[0];
 
-            csvContent += `${hostname},${status},${validTo},${issuer},${lastCheckDate},${error}\n`;
-        }
+      const row = [
+        `"${domain.hostname}"`,
+        `"${domain.server?.name || 'N/A'}"`,
+        `"${domain.server?.ipAddress || 'N/A'}"`,
+        `"${lastCheck ? (lastCheck.isValid ? 'VALIDE' : 'ERREUR') : 'EN ATTENTE'}"`,
+        `"${lastCheck?.validTo ? lastCheck.validTo.toISOString().split('T')[0] : 'N/A'}"`,
+        `"${(lastCheck?.issuer || 'N/A').replace(/"/g, '""')}"`,
+        `"${lastCheck?.lastCheck ? lastCheck.lastCheck.toISOString() : 'N/A'}"`,
+        `"${(lastCheck?.errorMessage || '').replace(/,/g, ' ').replace(/"/g, '""')}"`
+      ];
 
-        fs.writeFileSync(outputPath, csvContent);
-        return true;
-    } catch (error) {
-        console.error("Erreur lors de la génération de l'export :", error);
-        throw error;
+      csvContent += row.join(',') + '\n';
     }
+
+    return csvContent;
+  } catch (error) {
+      console.error("Erreur génération CSV :", error);
+      throw error;
+  }
 };

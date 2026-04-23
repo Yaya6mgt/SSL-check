@@ -57,7 +57,7 @@ router.put('/:id', async (req, res) => {
       name: name?.trim() || server.name,
       ipAddress: ipAddress?.trim() || server.ipAddress
     });
-
+    console.log("Serveur mis à jour:", server.toJSON());
     res.json(server);
   } catch (error: any) {
     console.error("Erreur modification serveur:", error);

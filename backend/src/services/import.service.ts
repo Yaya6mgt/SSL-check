@@ -2,6 +2,7 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import { Server } from '@/models/Server';
 import { Domain } from '@/models/Domain';
+import { performAndSaveSslCheck } from '@/services/ssl.service'; // Notre nouveau service
 
 export const importCsvData = async (filePath: string) => {
   const results: any[] = [];
@@ -10,6 +11,7 @@ export const importCsvData = async (filePath: string) => {
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (data) => results.push(data))
+      .on('error', (err) => reject(err))
       .on('end', async () => {
         try {
           for (const row of results) {
@@ -18,13 +20,19 @@ export const importCsvData = async (filePath: string) => {
               defaults: { name: row.server_name.trim() }
             });
 
-            await Domain.findOrCreate({
+            const [domain, created] = await Domain.findOrCreate({
               where: { hostname: row.hostname.trim().toLowerCase() },
               defaults: { serverId: server.id }
             });
+
+            if (created) {
+               await performAndSaveSslCheck(domain);
+            }
           }
-          console.log(`Importation terminée : ${results.length} lignes traitées.`);
-          resolve(true);
+
+          fs.unlinkSync(filePath);
+
+          resolve({ count: results.length });
         } catch (error) {
           console.error('Erreur lors de l\'insertion en base:', error);
           reject(error);

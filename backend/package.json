@@ -7,7 +7,6 @@
     "build": "tsc && tsc-alias",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "export": "node dist/scripts/export-db.js",
     "test": "jest"
   },
   "_moduleAliases": {
@@ -29,6 +28,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^25.6.0",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^8.0.0",
@@ -44,6 +44,7 @@
     "csv-parser": "^3.2.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "multer": "^2.1.1",
     "mysql2": "^3.22.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.5",
