@@ -3,9 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { Domain } from '@/types/domain.type';
 import type { IServer } from '@/types/server.type';
-import { ApiError, apiFetch } from '@/utils/api';
+import { apiFetch } from '@/utils/api';
 import { Plus, ArrowLeft, Globe, Trash2 } from 'lucide-react';
-import { Modal } from '@/components/common/Modal';
+import { fetchServer } from '@/api/server.api';
+import FormDomainModal from '@/components/common/modal/FormDomainModal';
+import { deleteDomain } from '@/api/domain.api';
 
 export default function ServerDetail() {
   const { id } = useParams();
@@ -16,37 +18,14 @@ export default function ServerDetail() {
   const [newDomainName, setNewDomainName] = useState('');
   const [addLoading, setAddLoading] = useState(false);
 
-  const fetchServer = async () => {
-    try {
-      const data = await apiFetch<IServer>(`servers/${id}`);
-      setServer(data);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        console.error(`Erreur API (${err.status}):`, err.message);
-      } else {
-        console.error("Erreur inconnue:", err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteDomain = async (domainId: number) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce domaine ?")) return;
-
-    try {
-      await apiFetch(`domains/${domainId}`, {
-        method: 'DELETE',
-      });
-      fetchServer();
-    } catch (err) {
-      alert("Erreur lors de la suppression du domaine");
-    }
+    await deleteDomain(domainId);
+    fetchServer(Number(id), setServer, setLoading);
   };
 
   useEffect(() => {
     setLoading(true);
-    fetchServer();
+    fetchServer(Number(id), setServer, setLoading);
   }, [id]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
@@ -62,7 +41,7 @@ export default function ServerDetail() {
       });
       setIsModalOpen(false);
       setNewDomainName('');
-      fetchServer();
+      fetchServer(Number(id), setServer, setLoading);
     } catch (err) {
       alert("Erreur lors de l'ajout du domaine");
     } finally {
@@ -148,41 +127,15 @@ export default function ServerDetail() {
         )}
       </div>
 
-      <Modal
+      <FormDomainModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Nouveau domaine"
-      >
-        <form onSubmit={handleAddDomain} className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3 mb-4">
-             <div className="text-blue-600 mt-0.5"><Globe size={18}/></div>
-             <p className="text-xs text-blue-700">
-                Le domaine sera automatiquement rattaché au serveur <strong>{server.name}</strong>.
-             </p>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Nom d'hôte (FQDN)</label>
-            <input
-              required
-              autoFocus
-              type="text"
-              placeholder="ex: google.com"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              value={newDomainName}
-              onChange={e => setNewDomainName(e.target.value)}
-            />
-          </div>
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={addLoading}
-              className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
-            >
-              {addLoading ? 'Traitement...' : 'Ajouter le domaine'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        server={server}
+        handleAddDomain={handleAddDomain}
+        addLoading={addLoading}
+        newDomainName={newDomainName}
+        setNewDomainName={setNewDomainName}
+      />
     </div>
   );
 }

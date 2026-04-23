@@ -1,0 +1,51 @@
+import { ApiError, apiFetch } from "@/utils/api";
+import type { Domain } from "@/types/domain.type";
+import type { ISslCheck } from "@/types/sslcheck.type";
+
+export const deleteDomain = async (domainId: number) => {
+  if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce domaine ?")) return;
+
+  try {
+    await apiFetch(`domains/${domainId}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    alert("Erreur lors de la suppression du domaine");
+  }
+};
+
+export const fetchDomains = async (setDomains: React.Dispatch<React.SetStateAction<Domain[]>>, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
+ try {
+    const data = await apiFetch<Domain[]>(`domains`);
+    setDomains(data);
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const checkDomain = async (domainId: number) => {
+  try {
+    const response : { message: string, check: ISslCheck } = await apiFetch(`domains/${domainId}/check`, {
+      method: 'POST',
+    });
+    return response;
+  } catch (err) {
+    alert("Erreur lors de la tentative de scan du domaine");
+  }
+};
+
+export const checkAllDomains = async () => {
+  try {
+    await apiFetch(`domains/check-all`, {
+      method: 'POST',
+    });
+  } catch (err) {
+    alert("Erreur lors de la tentative de scan des domaines");
+  }
+}

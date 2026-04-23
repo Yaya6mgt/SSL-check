@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import ServerDetail from './pages/ServerDetail';
 import Sidebar from './components/layout/Sidebar';
+import Domains from './pages/Domains';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/server/:id" element={<ServerDetail />} />
+          <Route path="/domains" element={<Domains />} />
         </Routes>
       </div>
     </BrowserRouter>

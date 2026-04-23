@@ -1,6 +1,5 @@
 import {
   LayoutDashboard,
-  Server,
   Globe,
   Settings,
   LogOut,
@@ -13,7 +12,6 @@ export default function Sidebar() {
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Serveurs', path: '/servers', icon: Server },
     { name: 'Domaines', path: '/domains', icon: Globe },
   ];
 

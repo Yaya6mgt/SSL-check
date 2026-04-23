@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { IServer } from '@/types/server.type';
 import type { Domain } from '@/types/domain.type';
-import { ApiError, apiFetch } from '@/utils/api';
+import { apiFetch } from '@/utils/api';
 import { ServerHealthBar } from '@/components/ServerHealthbar';
 import { Plus, Server, Trash2 } from 'lucide-react';
-import { Modal } from '@/components/common/Modal';
+import { fetchServers } from '@/api/server.api';
+import FormServerModal from '@/components/common/modal/FormServerModal';
 
 export default function Dashboard() {
   const [servers, setServers] = useState<IServer[]>([]);
@@ -14,20 +15,7 @@ export default function Dashboard() {
   const [newServer, setNewServer] = useState({ name: '', ipAddress: '' });
   const [loading, setLoading] = useState(false);
 
-  const fetchServers = async () => {
-    try {
-        const data = await apiFetch<IServer[]>(`servers`);
-        setServers(data);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          console.error(`Erreur API (${err.status}):`, err.message);
-        } else {
-          console.error("Erreur inconnue:", err);
-        }
-      }
-  };
-
-  useEffect(() => { fetchServers(); }, []);
+  useEffect(() => { fetchServers(setServers, setLoading); }, []);
 
   const handleAddServer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +27,9 @@ export default function Dashboard() {
       });
       setIsModalOpen(false);
       setNewServer({ name: '', ipAddress: '' });
-      fetchServers();
+      fetchServers(setServers, setLoading);
     } catch (err) {
       alert("Erreur lors de l'ajout du serveur");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -55,7 +41,7 @@ export default function Dashboard() {
 
     try {
       await apiFetch(`servers/${serverId}`, { method: 'DELETE' });
-      fetchServers();
+      fetchServers(setServers, setLoading);
     } catch (err) {
       alert("Erreur lors de la suppression du serveur");
     }
@@ -68,7 +54,7 @@ export default function Dashboard() {
         <p className="text-slate-500">Statut synthétique des serveurs Onlineformapro</p>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
+          className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95 cursor-pointer"
         >
           <Plus size={20} />
           Nouveau Serveur
@@ -131,45 +117,14 @@ export default function Dashboard() {
           );
         })}
       </div>
-      <Modal
+      <FormServerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Ajouter un serveur"
-      >
-        <form onSubmit={handleAddServer} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Nom du serveur</label>
-            <input
-              required
-              type="text"
-              placeholder="ex: Serveur Web Principal"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              value={newServer.name}
-              onChange={e => setNewServer({...newServer, name: e.target.value})}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Adresse IP</label>
-            <input
-              required
-              type="text"
-              placeholder="ex: 192.168.1.1"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              value={newServer.ipAddress}
-              onChange={e => setNewServer({...newServer, ipAddress: e.target.value})}
-            />
-          </div>
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Création...' : 'Confirmer l\'ajout'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        handleAddServer={handleAddServer}
+        loading={loading}
+        newServer={newServer}
+        setNewServer={setNewServer}
+      />
     </div>
   );
 }
