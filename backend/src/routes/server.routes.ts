@@ -42,6 +42,29 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, ipAddress } = req.body;
+
+    const server = await Server.findByPk(id);
+
+    if (!server) {
+      return res.status(404).json({ error: "Serveur non trouvé" });
+    }
+
+    await server.update({
+      name: name?.trim() || server.name,
+      ipAddress: ipAddress?.trim() || server.ipAddress
+    });
+
+    res.json(server);
+  } catch (error: any) {
+    console.error("Erreur modification serveur:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/', async (req, res) => {
   try {
     const { name, ipAddress } = req.body;
