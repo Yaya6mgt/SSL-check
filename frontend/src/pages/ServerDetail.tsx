@@ -3,20 +3,49 @@ import { useParams, Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { Domain } from '@/types/domain.type';
 import type { IServer } from '@/types/server.type';
-import { apiFetch } from '@/utils/api';
-import { Plus, ArrowLeft, Globe, Trash2 } from 'lucide-react';
-import { fetchServer } from '@/api/server.api';
+import { Plus, ArrowLeft, Globe, Trash2, Pencil } from 'lucide-react';
+import { fetchServer, updateServer } from '@/api/server.api';
 import FormDomainModal from '@/components/common/modal/FormDomainModal';
-import { deleteDomain } from '@/api/domain.api';
+import { checkDomain, deleteDomain, postDomain } from '@/api/domain.api';
+import { RefreshButton } from '@/components/common/RefreshButton';
+import FormServerModal from '@/components/common/modal/FormServerModal';
 
 export default function ServerDetail() {
   const { id } = useParams();
   const [server, setServer] = useState<IServer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshingId, setRefreshingId] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newDomainName, setNewDomainName] = useState('');
   const [addLoading, setAddLoading] = useState(false);
+  const [isEditServerModalOpen, setIsEditServerModalOpen] = useState(false);
+  const [editServerData, setEditServerData] = useState({ name: '', ipAddress: '' });
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  const [filterDays, setFilterDays] = useState<[number, number]>([0, 730]);
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'VALID' | 'ERROR' | 'EXPIRING'>('ALL');
+
+
+  const filteredDomains = server?.domains.filter(domain => {
+    const days = calculateDays(domain.checks[0]?.validTo) ?? 0;
+    const isValid = domain.checks[0]?.isValid;
+
+    const matchesDays = days >= filterDays[0] && days <= filterDays[1];
+
+    let matchesStatus = true;
+    if (filterStatus === 'VALID') matchesStatus = isValid === true;
+    if (filterStatus === 'ERROR') matchesStatus = isValid === false;
+    if (filterStatus === 'EXPIRING') matchesStatus = days < 30 && isValid === true;
+
+    return matchesDays && matchesStatus;
+  });
+
+  const sortedAndFiltered = filteredDomains?.sort((a, b) => {
+    const daysA = calculateDays(a.checks[0]?.validTo) ?? 9999;
+    const daysB = calculateDays(b.checks[0]?.validTo) ?? 9999;
+    return daysA - daysB;
+  });
 
   const handleDeleteDomain = async (domainId: number) => {
     await deleteDomain(domainId);
@@ -32,13 +61,7 @@ export default function ServerDetail() {
     e.preventDefault();
     setAddLoading(true);
     try {
-      await apiFetch('domains', {
-        method: 'POST',
-        body: {
-            hostname: newDomainName,
-            serverId: Number(id)
-        }
-      });
+      await postDomain(newDomainName, id!);
       setIsModalOpen(false);
       setNewDomainName('');
       fetchServer(Number(id), setServer, setLoading);
@@ -46,6 +69,61 @@ export default function ServerDetail() {
       alert("Erreur lors de l'ajout du domaine");
     } finally {
       setAddLoading(false);
+    }
+  };
+
+  const handleManualCheck = async (domainId: number) => {
+    setRefreshingId(domainId);
+
+    try {
+      const response = await checkDomain(domainId);
+      if (!response || !response.check) throw new Error("Données de scan manquantes");
+
+      const newCheck = response.check;
+
+      setServer(prevServer => {
+        if (!prevServer) return prevServer;
+
+        return {
+          ...prevServer,
+          domains: prevServer.domains.map(domain => {
+            if (domain.id === domainId) {
+              return {
+                ...domain,
+                checks: [newCheck, ...(domain.checks || [])].slice(0, 5)
+              };
+            }
+            return domain;
+          })
+        };
+      });
+
+    } catch (err) {
+      console.error("Erreur lors du scan manuel:", err);
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
+  const handleUpdateServer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdateLoading(true);
+    try {
+      await updateServer(Number(id), editServerData.name, editServerData.ipAddress);
+
+      setIsEditServerModalOpen(false);
+      fetchServer(Number(id), setServer, setLoading);
+    } catch (err) {
+      alert("Erreur lors de la mise à jour");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const openEditServerModal = () => {
+    if (server) {
+      setEditServerData({ name: server.name, ipAddress: server.ipAddress });
+      setIsEditServerModalOpen(true);
     }
   };
 
@@ -67,8 +145,17 @@ export default function ServerDetail() {
 
       <div className="bg-primary text-white p-8 rounded-2xl mb-8 shadow-lg flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{server.name}</h1>
-          <p className="text-slate-400 mt-2">IP: {server.ipAddress}</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{server.name}</h1>
+            <button
+              onClick={openEditServerModal}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+              title="Modifier le serveur"
+            >
+              <Pencil size={20} />
+            </button>
+          </div>
+          <p className="text-slate-400 mt-2 font-mono">IP: {server.ipAddress}</p>
         </div>
 
         <button
@@ -80,22 +167,78 @@ export default function ServerDetail() {
         </button>
       </div>
 
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-end gap-8">
+
+        <div className="flex-1 min-w-75">
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Statut du certificat</label>
+          <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
+            {[
+              { id: 'ALL', label: 'Tous' },
+              { id: 'VALID', label: 'Valides' },
+              { id: 'ERROR', label: 'Erreurs' },
+              { id: 'EXPIRING', label: 'Expirant < 30j' }
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setFilterStatus(opt.id as any)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                  filterStatus === opt.id
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-75">
+          <div className="flex justify-between mb-3">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Durée restante (jours)</label>
+            <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              {filterDays[0]}j - {filterDays[1]}j
+            </span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="730"
+            value={filterDays[1]}
+            onChange={(e) => setFilterDays([filterDays[0], parseInt(e.target.value)])}
+            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase">
+            <span>Aujourd'hui</span>
+            <span>2 ans</span>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {server.domains && server.domains.length > 0 ? (
-          server.domains.map((domain: Domain) => {
+        {sortedAndFiltered && sortedAndFiltered.length > 0 ? (
+          sortedAndFiltered.map((domain: Domain) => {
             const days = calculateDays(domain.checks[0]?.validTo);
             const config = getStatusConfig(days, domain.checks[0]?.isValid);
 
             return (
               <div key={domain.id} className="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-red-100 transition-all">
                 <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => handleDeleteDomain(domain.id)}
-                    className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
-                    title="Supprimer le domaine"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className={`p-2 flex row `}>
+                    <RefreshButton
+                        onClick={() => handleManualCheck(domain.id)}
+                        isLoading={refreshingId === domain.id}
+                        group={false}
+                        className="px-2 py-2 border-transparent hover:border-secondary-100"
+                      />
+                    <button
+                      onClick={() => handleDeleteDomain(domain.id)}
+                      className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+                      title="Supprimer le domaine"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
 
                   <div className={`p-2 rounded-lg bg-slate-50 text-slate-400`}>
                     <Globe size={20} />
@@ -135,6 +278,15 @@ export default function ServerDetail() {
         addLoading={addLoading}
         newDomainName={newDomainName}
         setNewDomainName={setNewDomainName}
+      />
+      <FormServerModal
+        isOpen={isEditServerModalOpen}
+        onClose={() => setIsEditServerModalOpen(false)}
+        onSubmit={handleUpdateServer}
+        loading={updateLoading}
+        serverData={editServerData}
+        setServerData={setEditServerData}
+        isEdit
       />
     </div>
   );

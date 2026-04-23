@@ -7,18 +7,19 @@ interface FormDomainServerModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  handleAddDomain: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   newDomain: NewDomainState;
   setNewDomain: React.Dispatch<React.SetStateAction<NewDomainState>>;
   servers: IServer[];
+  isEdit?: boolean;
 }
 
-function FormDomainServerModal({ isOpen, onClose, title, handleAddDomain, newDomain, setNewDomain, servers }: FormDomainServerModalProps) {
+function FormDomainServerModal({ isOpen, onClose, title, handleSubmit, newDomain, setNewDomain, servers, isEdit }: FormDomainServerModalProps) {
   const isCreatingNewServer = newDomain.serverId === "NEW_SERVER";
 
   const serverOptions = [
     ...servers.map(s => ({
-      id: s.id,
+      id: s.id.toString(),
       label: s.name,
       subLabel: s.ipAddress
     })),
@@ -27,7 +28,7 @@ function FormDomainServerModal({ isOpen, onClose, title, handleAddDomain, newDom
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title || "Ajouter un domaine"}>
-      <form onSubmit={handleAddDomain} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-1">Nom d'hôte</label>
           <input
@@ -79,9 +80,9 @@ function FormDomainServerModal({ isOpen, onClose, title, handleAddDomain, newDom
         )}
 
         <button type="submit" className="w-full bg-secondary hover:bg-secondary-hover text-white py-3 rounded-lg font-bold cursor-pointer">
-          {isCreatingNewServer
-            ? "Créer le serveur et le domaine"
-            : "Enregistrer le domaine"}
+          {isEdit
+            ? "Mettre à jour le domaine"
+            : isCreatingNewServer ? "Créer le serveur et le domaine" : "Enregistrer le domaine"}
         </button>
       </form>
     </Modal>

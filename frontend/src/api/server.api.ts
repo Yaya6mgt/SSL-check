@@ -30,3 +30,19 @@ export const fetchServer = async (id: number, setServer: React.Dispatch<React.Se
     setLoading(false);
   }
 };
+
+export const updateServer = async (id: number, name: string, ipAdress: string) => {
+  try {
+    console.log("Données envoyées à l'API:", { name, ipAdress });
+    await apiFetch(`servers/${id}`, {
+      method: 'PUT',
+      body: { name, ipAdress }
+    });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  }
+};

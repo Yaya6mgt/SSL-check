@@ -47,6 +47,17 @@ export default function Dashboard() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <header className="mb-10">
+          <h1 className="text-3xl font-extrabold text-slate-900">Infrastructure SSL</h1>
+          <p className="text-slate-500">Statut synthétique des serveurs Onlineformapro</p>
+        </header>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-10">
@@ -62,68 +73,74 @@ export default function Dashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {servers.map(server => {
-          const serverDomains = server.domains || [];
+        {Array.isArray(servers) ? (
+          servers.map(server => {
+            const serverDomains = server.domains || [];
 
-          const worstDays = serverDomains.length > 0
-              ? Math.min(...serverDomains.map((d: Domain) => calculateDays(d.checks?.[0]?.validTo) || 999))
-              : 999;
+            const worstDays = serverDomains.length > 0
+                ? Math.min(...serverDomains.map((d: Domain) => calculateDays(d.checks?.[0]?.validTo) || 999))
+                : 999;
 
-          const allValid = serverDomains.every((d: Domain) => d.checks?.[0]?.isValid !== false);
-          const config = getStatusConfig(worstDays, allValid);
+            const allValid = serverDomains.every((d: Domain) => d.checks?.[0]?.isValid !== false);
+            const config = getStatusConfig(worstDays, allValid);
 
-          return (
-            <div key={server.id} className="relative group">
-              <button
-                onClick={(e) => handleDeleteServer(e, server.id, server.name)}
-                className="absolute top-4 right-4 z-10 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200"
-                title="Supprimer le serveur"
-              >
-                <Trash2 size={18} />
-              </button>
+            return (
+              <div key={server.id} className="relative group">
+                <button
+                  onClick={(e) => handleDeleteServer(e, server.id, server.name)}
+                  className="absolute top-4 right-4 z-10 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  title="Supprimer le serveur"
+                >
+                  <Trash2 size={18} />
+                </button>
 
-              <Link
-                to={`/server/${server.id}`}
-                className="block p-6 bg-white rounded-3xl shadow-sm border border-slate-200 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 h-full"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`p-3 rounded-2xl ${config.bg} shadow-inner`}>
-                    <Server size={24} className={config.color} />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-slate-800 leading-tight">
-                      {server.name}
-                    </h2>
-                    <p className="text-xs font-mono text-slate-400 mt-1">{server.ipAddress}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500">
-                      {serverDomains.length} domaine{serverDomains.length > 1 ? 's' : ''}
-                    </span>
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${config.bg} ${config.color} border border-current/10`}>
-                      {config.label}
-                    </span>
+                <Link
+                  to={`/server/${server.id}`}
+                  className="block p-6 bg-white rounded-3xl shadow-sm border border-slate-200 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 h-full"
+                >
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className={`p-3 rounded-2xl ${config.bg} shadow-inner`}>
+                      <Server size={24} className={config.color} />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-xl font-bold text-slate-800 leading-tight">
+                        {server.name}
+                      </h2>
+                      <p className="text-xs font-mono text-slate-400 mt-1">{server.ipAddress}</p>
+                    </div>
                   </div>
 
-                  <div className="pt-2">
-                    <ServerHealthBar domains={serverDomains} />
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-slate-500">
+                        {serverDomains.length} domaine{serverDomains.length > 1 ? 's' : ''}
+                      </span>
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${config.bg} ${config.color} border border-current/10`}>
+                        {config.label}
+                      </span>
+                    </div>
+
+                    <div className="pt-2">
+                      <ServerHealthBar domains={serverDomains} />
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </div>
-          );
-        })}
+                </Link>
+              </div>
+            );
+          })
+        ) : (
+          <div className="col-span-full text-center py-10 text-slate-400">
+            Chargement des serveurs ou données invalides...
+          </div>
+        )}
       </div>
       <FormServerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        handleAddServer={handleAddServer}
+        onSubmit={handleAddServer}
         loading={loading}
-        newServer={newServer}
-        setNewServer={setNewServer}
+        serverData={newServer}
+        setServerData={setNewServer}
       />
     </div>
   );

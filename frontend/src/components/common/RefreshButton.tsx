@@ -32,7 +32,7 @@ export function RefreshButton({
       className={cnFusion(`group flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold border-2 border-secondary-500 transition-all active:scale-95 disabled:cursor-not-allowed
         ${isLoading
           ? 'bg-slate-100 border-slate-200 text-slate-400'
-          : 'border-blue-100 text-secondary-active hover:bg-secondary-50'
+          : 'border-secondary-100 text-secondary-active hover:bg-secondary-50'
         } ${className}`)}
     >
       <RefreshCw

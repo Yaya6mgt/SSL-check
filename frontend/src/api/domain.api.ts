@@ -29,6 +29,24 @@ export const fetchDomains = async (setDomains: React.Dispatch<React.SetStateActi
   }
 };
 
+export const postDomain = async (hostname: string, serverId: string) => {
+  try {
+      await apiFetch('domains', {
+        method: 'POST',
+        body: {
+            hostname: hostname,
+            serverId: Number(serverId)
+        }
+      });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  }
+};
+
 export const checkDomain = async (domainId: number) => {
   try {
     const response : { message: string, check: ISslCheck } = await apiFetch(`domains/${domainId}/check`, {
@@ -36,7 +54,11 @@ export const checkDomain = async (domainId: number) => {
     });
     return response;
   } catch (err) {
-    alert("Erreur lors de la tentative de scan du domaine");
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
   }
 };
 
@@ -46,6 +68,10 @@ export const checkAllDomains = async () => {
       method: 'POST',
     });
   } catch (err) {
-    alert("Erreur lors de la tentative de scan des domaines");
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
   }
 }

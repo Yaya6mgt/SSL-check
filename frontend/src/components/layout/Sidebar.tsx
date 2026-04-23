@@ -18,7 +18,7 @@ export default function Sidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <aside className="w-64 h-screen bg-primary text-slate-300 flex flex-col fixed left-0 top-0 shadow-xl">
+    <aside className="w-64 h-screen bg-primary text-slate-300 flex flex-col  shadow-xl">
       <div className="p-6 border-b border-slate-800">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center text-white shadow-lg">

@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Globe, Plus, Search, Trash2 } from 'lucide-react';
+import { Globe, Plus, Search, Trash2, Pencil, Download, Upload } from 'lucide-react';
 import { apiFetch } from '@/utils/api';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import { initialDomainState, type Domain, type NewDomainState } from '@/types/domain.type';
 import type { IServer } from '@/types/server.type';
 import FormDomainServerModal from '@/components/common/modal/FormDomainServerModal';
-import { checkAllDomains, checkDomain, deleteDomain, fetchDomains } from '@/api/domain.api';
+import { checkAllDomains, checkDomain, deleteDomain, fetchDomains, postDomain } from '@/api/domain.api';
 import { fetchServers } from '@/api/server.api';
 import { RefreshButton } from '@/components/common/RefreshButton';
+import { ImportCsvModal } from '@/components/common/modal/ImportCsvModal';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Domains() {
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -19,6 +22,9 @@ export default function Domains() {
   const [newDomain, setNewDomain] = useState<NewDomainState>(initialDomainState);
   const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
   const [refreshingId, setRefreshingId] = useState<number | null>(null);
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentDomainId, setCurrentDomainId] = useState<number | null>(null);
+  const [isImportModalOpen, setImportModalOpen] = useState(false);
 
   const fetchData = async () => {
     fetchDomains(setDomains, setLoading);
@@ -46,12 +52,42 @@ export default function Domains() {
         finalServerId = createdServer.id.toString();
       }
 
-      await apiFetch('domains', {
-        method: 'POST',
-        body: {
-          hostname: newDomain.hostname,
-          serverId: Number(finalServerId)
-        }
+      await postDomain(newDomain.hostname, finalServerId!);
+
+      setIsModalOpen(false);
+      setNewDomain(initialDomainState);
+      fetchData();
+
+    } catch (err) {
+      console.error("Erreur lors de la création :", err);
+      alert("Impossible de finaliser l'opération.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditDomain = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      let finalServerId = newDomain.serverId;
+
+      if (newDomain.serverId === "NEW_SERVER") {
+        const createdServer = await apiFetch<IServer>('servers', {
+          method: 'POST',
+          body: {
+            name: newDomain.newServerName,
+            ipAddress: newDomain.newServerIp
+          }
+        });
+
+        finalServerId = createdServer.id.toString();
+      }
+
+      await apiFetch(`domains/${currentDomainId}`, {
+        method: 'PUT',
+        body: { hostname: newDomain.hostname, serverId: finalServerId }
       });
 
       setIsModalOpen(false);
@@ -112,6 +148,50 @@ export default function Domains() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      window.location.href = `${API_URL}/domains/export`;
+
+    } catch (err) {
+      alert("Erreur lors de l'export");
+    }
+  };
+
+  const handleImportSuccess = () => {
+    fetchData();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (isEdit && currentDomainId) {
+      handleEditDomain(e);
+    } else {
+      await handleAddDomain(e);
+    }
+
+    setIsModalOpen(false);
+    fetchData();
+  };
+
+  const openEditModal = (domain: Domain) => {
+    setIsEdit(true);
+    setCurrentDomainId(domain.id);
+    setNewDomain({
+      hostname: domain.hostname,
+      serverId: domain.serverId.toString(),
+      newServerName: '',
+      newServerIp: ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const openAddModal = () => {
+    setIsEdit(false);
+    setNewDomain(initialDomainState);
+    setIsModalOpen(true);
+  };
+
   const filteredDomains = domains.filter(d =>
     d.hostname.toLowerCase().includes(search.toLowerCase())
   );
@@ -134,7 +214,7 @@ export default function Domains() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => openAddModal()}
             className="flex items-center gap-2 px-4 py-2.5 bg-secondary hover:bg-secondary-hover text-white rounded-xl font-bold transition-all active:scale-95 shadow-sm"
           >
             <Plus size={20} />
@@ -159,6 +239,16 @@ export default function Domains() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+      </div>
+      <div className="flex gap-2 mb-4">
+        <button onClick={handleExport} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <Download size={16} />
+          Exporter
+        </button>
+        <button onClick={() => setImportModalOpen(true)} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <Upload size={16} />
+          Importer
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -199,6 +289,12 @@ export default function Domains() {
                   <td className="p-4 text-right space-x-2">
                     <div className="inline-flex items-center gap-1 px-2 py-1">
                       <button
+                        onClick={() => openEditModal(domain)}
+                        className="p-2 text-slate-400 hover:text-primary transition-colors mr-3"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
                         onClick={() => handleDeleteDomain(domain.id)}
                         className="p-2 text-slate-400 hover:text-red-600 transition-colors mr-3"
                       >
@@ -208,7 +304,7 @@ export default function Domains() {
                         onClick={() => handleManualCheck(domain.id)}
                         isLoading={refreshingId === domain.id}
                         group={false}
-                        className="px-2 py-2 border-transparent hover:border-blue-100"
+                        className="px-2 py-2 border-transparent hover:border-secondary-100"
                       />
                     </div>
                   </td>
@@ -222,11 +318,17 @@ export default function Domains() {
       <FormDomainServerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Ajouter un domaine"
-        handleAddDomain={handleAddDomain}
+        title={isEdit ? "Modifier le domaine" : "Ajouter un domaine"}
+        handleSubmit={handleSubmit}
         newDomain={newDomain}
         setNewDomain={setNewDomain}
         servers={servers}
+        isEdit={isEdit}
+      />
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );
