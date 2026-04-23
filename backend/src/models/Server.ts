@@ -14,6 +14,7 @@ export class Server extends Model {
 
   @HasMany(() => Domain, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     hooks: true
   })
   declare domains: Domain[];

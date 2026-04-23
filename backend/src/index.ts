@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import { initScheduler } from '@/engine/scheduler';
-import { connectDB } from './config/db';
+import { connectDB, sequelize } from './config/db';
 import { importCsvData } from './services/import.service';
 import domainRoutes from './routes/domain.routes';
 import serverRoutes from './routes/server.routes';
@@ -39,7 +39,7 @@ async function startApp() {
     });
   } catch (error) {
       console.error("Erreur au démarrage :", error);
-      process.exit(1);
+      process.exit(1)
   }
 }
 

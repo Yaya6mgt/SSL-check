@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { Server } from './Server';
 import { SslCheck } from './SslCheck';
+import { Alert } from './Alert';
 
 @Table({ tableName: 'domains', underscored: true })
 export class Domain extends Model {
@@ -11,12 +12,18 @@ export class Domain extends Model {
   declare hostname: string;
 
   @ForeignKey(() => Server)
-  @Column({ type: DataType.INTEGER, allowNull: true })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false
+  })
   declare serverId: number;
 
   @BelongsTo(() => Server)
   declare server: Server;
 
-  @HasMany(() => SslCheck)
+  @HasMany(() => SslCheck, { onDelete: 'CASCADE', hooks: true })
   declare checks: SslCheck[];
+
+  @HasMany(() => Alert, { onDelete: 'CASCADE', hooks: true })
+  declare alerts: Alert[];
 }

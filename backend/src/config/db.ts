@@ -31,6 +31,7 @@ export async function connectDB() {
         try {
             await sequelize.authenticate();
             console.log('Connexion à MySQL réussie !');
+            await sequelize.sync({ alter: true });
             connected = true;
         } catch (error) {
             attempts++;
