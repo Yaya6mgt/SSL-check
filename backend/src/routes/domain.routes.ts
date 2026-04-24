@@ -7,6 +7,7 @@ import multer from 'multer';
 import { importCsvData } from '@/services/import.service';
 import { generateDomainsCsv } from '@/services/export.service';
 import { authMiddleware } from '@/middleware/auth.middleware';
+import { editorMiddleware } from '@/middleware/editor.middleware';
 
 const router = Router();
 const upload = multer({ dest: 'uploads/' });
@@ -29,7 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', editorMiddleware, async (req, res) => {
   try {
     console.log("Requête reçue pour créer un domaine avec les données:", req.body);
     const { hostname, serverId } = req.body;
@@ -48,7 +49,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/check-all', authMiddleware, async (req, res) => {
+router.post('/check-all', editorMiddleware, async (req, res) => {
   try {
     const domains = await Domain.findAll();
     console.log(`[BATCH] Relance de ${domains.length} scans SSL...`);
@@ -69,7 +70,7 @@ router.post('/check-all', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/import', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/import', editorMiddleware, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier fourni" });
 
@@ -95,7 +96,7 @@ router.get('/export', authMiddleware, async (req, res) => {
   }
 });
 
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', editorMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { hostname, serverId } = req.body;
@@ -139,7 +140,7 @@ router.post('/:id/check', authMiddleware, async (req, res) => {
   }
 });
 
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', editorMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Domain.destroy({ where: { id: Number(id) } });

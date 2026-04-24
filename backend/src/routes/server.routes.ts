@@ -3,6 +3,7 @@ import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
 import { Server } from '@/models/Server';
 import { authMiddleware } from '@/middleware/auth.middleware';
+import { editorMiddleware } from '@/middleware/editor.middleware';
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', editorMiddleware, async (req, res) => {
   try {
     const { name, ipAddress } = req.body;
     if (!name || !ipAddress) {
@@ -57,7 +58,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', editorMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, ipAddress } = req.body;
@@ -80,7 +81,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', editorMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Server.destroy({ where: { id: Number(id) } });

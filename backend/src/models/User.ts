@@ -24,7 +24,7 @@ export class User extends Model {
   declare password: string;
 
   @Column({
-    type: DataType.ENUM('admin', 'viewer'),
+    type: DataType.ENUM('admin', 'editor', 'viewer'),
     defaultValue: 'viewer',
     allowNull: false
   })
