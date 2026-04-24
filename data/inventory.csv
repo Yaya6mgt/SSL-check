@@ -1,7 +1,0 @@
-server_name,ip_address,hostname
-VM-Production-OFA,141.94.131.1,cloud-elearning.com
-VM-Production-OFA,141.94.131.1,expired.badssl.com
-VM-Demo-OFA,141.94.131.2,demo-onlineformapro.com
-VM-Demo-OFA,141.94.131.2,wrong.host.badssl.com
-VM-Live-OFA,141.94.131.3,live.olfp.net
-VM-Live-OFA,141.94.131.3,self-signed.badssl.com
