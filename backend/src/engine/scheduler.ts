@@ -17,7 +17,8 @@ export async function runMonitoringCycle() {
         domain.hostname,
         domain.server?.name || 'Inconnu',
         response.check.validTo ? Math.floor((response.check.validTo.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
-        response.error || null
+        response.check.errorMessage,
+        response.check.isValid
     );
     if (alert) alertsToNotify.push(alert);
   }

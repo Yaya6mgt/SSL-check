@@ -4,6 +4,7 @@ import path from 'path';
 import { Alert } from '@/models/Alert';
 import { getAlertThreshold } from '@/utils/health-status';
 import { Recipient } from '@/models/Recipients';
+import { translateSslError } from '@/utils/error-ssl-translator';
 
 export class NotificationService {
     private static transporter = nodemailer.createTransport({
@@ -15,10 +16,33 @@ export class NotificationService {
         },
     });
 
-    static async checkAndPrepareAlert(domainId: number, hostname: string, serverName: string, daysRemaining: number | null, error?: string) {
+    static async checkAndPrepareAlert(domainId: number, hostname: string, serverName: string, daysRemaining: number | null, error?: string, isValid?: boolean) {
+        if (error || daysRemaining === null || !isValid) {
+            const sentToday = await Alert.findOne({
+                where: {
+                    domainId,
+                    level: 'ERROR',
+                }
+            });
+
+            if (sentToday) {
+                await sentToday.destroy();
+            }
+
+            return {
+                domainId,
+                hostname,
+                serverName,
+                days: daysRemaining || 'ÉCHEC',
+                level: 'CRITIQUE (Erreur)',
+                color: '#D32F2F',
+                threshold: 'ERROR',
+                error: error
+            };
+        }
         const threshold = getAlertThreshold(daysRemaining);
 
-        if (threshold === null && daysRemaining !== null && daysRemaining > 30) {
+        if (threshold === null && daysRemaining > 30) {
             await Alert.destroy({ where: { domainId } });
             return null;
         }
@@ -55,12 +79,15 @@ export class NotificationService {
         try {
             let tableRows = "";
             for (const alert of alerts) {
+                const statusInfo = alert.error ? `<br/><small style="color: #666;">${translateSslError(alert.error)}</small>` : '';
                 tableRows += `
                     <tr>
                         <td style="padding:10px; border:1px solid #ddd;">${alert.hostname}</td>
-                        <td style="padding:10px; border:1px solid #ddd;">${alert.serverName}</td>
+                        <td style="padding:10px; border:1px solid #ddd;">${alert.serverName}</td>t(alert.
                         <td style="padding:10px; border:1px solid #ddd;">${alert.days}</td>
-                        <td style="padding:10px; border:1px solid #ddd; color: ${alert.color}; font-weight: bold;">${alert.level}</td>
+                        <td style="padding:10px; border:1px solid #ddd; color: ${alert.color}; font-weight: bold;">
+                            ${alert.level} ${statusInfo}
+                        </td>
                     </tr>`;
             }
 
