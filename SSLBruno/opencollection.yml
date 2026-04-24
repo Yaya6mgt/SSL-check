@@ -2,9 +2,29 @@ opencollection: 1.0.0
 
 info:
   name: SSLChecker
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0MUBnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzcwMzA3MTYsImV4cCI6MTc3NzExNzExNn0.wyzUEzPWiuKNgDZHwscKBe8JB12SY_iTZXbOEdqQhW0
 bundled: false
 extensions:
   bruno:
     ignore:
       - node_modules
       - .git
+    presets:
+      request:
+        type: http
+        url: http://localhost:3000/api

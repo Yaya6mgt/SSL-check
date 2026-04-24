@@ -1,17 +1,16 @@
 info:
-  name: Login
+  name: Update Role User
   type: http
-  seq: 2
+  seq: 6
 
 http:
-  method: POST
-  url: http://localhost:3000/api/auth/login
+  method: PUT
+  url: http://localhost:3000/api/users/2/role
   body:
     type: json
     data: |-
       {
-        "email": "test1@gmail.com",
-        "password": "azerty"
+        "role": "editor"
       }
   auth: inherit
 

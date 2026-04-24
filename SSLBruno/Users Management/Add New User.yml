@@ -1,20 +1,20 @@
 info:
-  name: Register
+  name: Add New User
   type: http
-  seq: 1
+  seq: 3
 
 http:
   method: POST
-  url: https:localhost:3000/api
+  url: http://localhost:3000/api/users
   body:
     type: json
     data: |-
       {
-        "firstName": "Yanis",
-        "lastName": "Mignot",
-        "email": "test1@gmail.com",
+        "firstName": "Jean",
+        "lastName": "Dupond",
+        "email": "test2@gmail.com",
         "password": "azerty",
-        "role": "admin"
+        "role": "editor"
       }
   auth: inherit
 
