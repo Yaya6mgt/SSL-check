@@ -3,6 +3,9 @@ import { hashPassword } from '@/utils/auth.utils';
 
 @Table({ tableName: 'users' })
 export class User extends Model {
+  @Column({ type: DataType.INTEGER, autoIncrement: true, primaryKey: true })
+  declare id: number;
+
   @Column({ type: DataType.STRING, allowNull: false })
   declare firstName: string;
 
