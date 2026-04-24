@@ -14,7 +14,7 @@ http:
         "lastName": "Dupond",
         "email": "test2@gmail.com",
         "password": "azerty",
-        "role": "editor"
+        "role": "admin"
       }
   auth: inherit
 
