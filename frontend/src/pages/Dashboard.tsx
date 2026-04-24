@@ -8,6 +8,8 @@ import { ServerHealthBar } from '@/components/ServerHealthbar';
 import { Plus, Server, Trash2 } from 'lucide-react';
 import { fetchServers } from '@/api/server.api';
 import FormServerModal from '@/components/common/modal/FormServerModal';
+import { ServerFilter } from '@/components/filter/ServerFilter';
+import SearchBar from '@/components/common/utils/SearchBar';
 
 export default function Dashboard() {
   const [servers, setServers] = useState<IServer[]>([]);
@@ -15,7 +17,17 @@ export default function Dashboard() {
   const [newServer, setNewServer] = useState({ name: '', ipAddress: '' });
   const [loading, setLoading] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [selectedServerIds, setSelectedServerIds] = useState<number[]>([]);
+
   useEffect(() => { fetchServers(setServers, setLoading); }, []);
+
+  useEffect(() => {
+    if (servers.length > 0) {
+      setSelectedServerIds(servers.map(s => s.id));
+    }
+  }, [servers]);
+
 
   const handleAddServer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +59,13 @@ export default function Dashboard() {
     }
   };
 
+  const filteredServers = servers.filter(server => {
+    const matchesServer = selectedServerIds.includes(server.id);
+    const matchesSearch = server.name.toLowerCase().includes(search.toLowerCase()) || server.ipAddress.includes(search);
+
+    return matchesServer && matchesSearch;
+  });
+
   if (loading) {
     return (
       <div className="p-8 max-w-7xl mx-auto">
@@ -72,9 +91,18 @@ export default function Dashboard() {
         </button>
       </header>
 
+      <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un serveur..." className="mb-4" />
+      <div className="flex items-center gap-4 mb-6">
+        <ServerFilter
+          servers={servers}
+          selectedServerIds={selectedServerIds}
+          onChange={setSelectedServerIds}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.isArray(servers) ? (
-          servers.map(server => {
+        {Array.isArray(filteredServers) ? (
+          filteredServers.map(server => {
             const serverDomains = server.domains || [];
 
             const worstDays = serverDomains.length > 0

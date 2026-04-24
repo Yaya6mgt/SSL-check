@@ -7,8 +7,9 @@ import { Plus, ArrowLeft, Globe, Trash2, Pencil } from 'lucide-react';
 import { fetchServer, updateServer } from '@/api/server.api';
 import FormDomainModal from '@/components/common/modal/FormDomainModal';
 import { checkDomain, deleteDomain, postDomain } from '@/api/domain.api';
-import { RefreshButton } from '@/components/common/RefreshButton';
+import { RefreshButton } from '@/components/common/utils/RefreshButton';
 import FormServerModal from '@/components/common/modal/FormServerModal';
+import { DomainsFilters } from '@/components/filter/DomainsFilter';
 
 export default function ServerDetail() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ export default function ServerDetail() {
   const [editServerData, setEditServerData] = useState({ name: '', ipAddress: '' });
   const [updateLoading, setUpdateLoading] = useState(false);
 
-  const [filterDays, setFilterDays] = useState<[number, number]>([0, 730]);
+  const [filterDays, setFilterDays] = useState<[number, number]>([0, 200]);
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'VALID' | 'ERROR' | 'EXPIRING'>('ALL');
 
 
@@ -167,53 +168,12 @@ export default function ServerDetail() {
         </button>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-end gap-8">
-
-        <div className="flex-1 min-w-75">
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Statut du certificat</label>
-          <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
-            {[
-              { id: 'ALL', label: 'Tous' },
-              { id: 'VALID', label: 'Valides' },
-              { id: 'ERROR', label: 'Erreurs' },
-              { id: 'EXPIRING', label: 'Expirant < 30j' }
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                onClick={() => setFilterStatus(opt.id as any)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                  filterStatus === opt.id
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-75">
-          <div className="flex justify-between mb-3">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Durée restante (jours)</label>
-            <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              {filterDays[0]}j - {filterDays[1]}j
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="730"
-            value={filterDays[1]}
-            onChange={(e) => setFilterDays([filterDays[0], parseInt(e.target.value)])}
-            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
-          />
-          <div className="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase">
-            <span>Aujourd'hui</span>
-            <span>2 ans</span>
-          </div>
-        </div>
-      </div>
+      <DomainsFilters
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterDays={filterDays}
+        setFilterDays={setFilterDays}
+      />
 
       <div className="space-y-4">
         {sortedAndFiltered && sortedAndFiltered.length > 0 ? (
