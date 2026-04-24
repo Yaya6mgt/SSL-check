@@ -3,13 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { Domain } from '@/types/domain.type';
 import type { IServer } from '@/types/server.type';
-import { Plus, ArrowLeft, Globe, Trash2, Pencil } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil } from 'lucide-react';
 import { fetchServer, updateServer } from '@/api/server.api';
 import FormDomainModal from '@/components/common/modal/FormDomainModal';
 import { checkDomain, deleteDomain, postDomain } from '@/api/domain.api';
 import { RefreshButton } from '@/components/common/utils/RefreshButton';
 import FormServerModal from '@/components/common/modal/FormServerModal';
 import { DomainsFilters } from '@/components/filter/DomainsFilter';
+import DisplayErrorIcon from '@/components/domains/DisplayErrorIcon';
 
 export default function ServerDetail() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ export default function ServerDetail() {
     const days = calculateDays(domain.checks[0]?.validTo) ?? 0;
     const isValid = domain.checks[0]?.isValid;
 
-    const matchesDays = days >= filterDays[0] && days <= filterDays[1];
+    const matchesDays = (days >= filterDays[0] && days <= filterDays[1]) || !isValid;
 
     let matchesStatus = true;
     if (filterStatus === 'VALID') matchesStatus = isValid === true;
@@ -178,6 +179,7 @@ export default function ServerDetail() {
       <div className="space-y-4">
         {sortedAndFiltered && sortedAndFiltered.length > 0 ? (
           sortedAndFiltered.map((domain: Domain) => {
+            const isValid = domain.checks[0]?.isValid;
             const days = calculateDays(domain.checks[0]?.validTo);
             const config = getStatusConfig(days, domain.checks[0]?.isValid);
 
@@ -200,9 +202,7 @@ export default function ServerDetail() {
                     </button>
                   </div>
 
-                  <div className={`p-2 rounded-lg bg-slate-50 text-slate-400`}>
-                    <Globe size={20} />
-                  </div>
+                  <DisplayErrorIcon domain={domain} />
 
                   <div>
                     <h3 className="text-lg font-mono font-bold text-slate-800">{domain.hostname}</h3>
@@ -212,7 +212,7 @@ export default function ServerDetail() {
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <p className={`text-xl font-black ${config.color}`}>
-                      {days !== null ? `${days} j` : 'N/A'}
+                      {days !== null && isValid ? `${days} j` :  'N/A'}
                     </p>
                     <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Restants</p>
                   </div>

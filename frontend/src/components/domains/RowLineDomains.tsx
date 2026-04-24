@@ -1,7 +1,8 @@
 import { calculateDays, getStatusConfig } from "@/utils/status";
 import type { Domain } from "@/types/domain.type";
-import { Globe, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { RefreshButton } from "@/components/common/utils/RefreshButton";
+import DisplayErrorIcon from "./DisplayErrorIcon";
 
 interface RowLineDomainsProps {
   domain: Domain;
@@ -18,10 +19,7 @@ function RowLineDomains({ domain, refreshingId, openEditModal, handleManualCheck
   return (
     <tr key={domain.id} className="hover:bg-slate-50/50 transition-colors group">
       <td className="p-4">
-        <div className="flex items-center gap-3">
-          <Globe size={18} className="text-slate-400" />
-          <span className="font-mono font-bold text-slate-700">{domain.hostname}</span>
-        </div>
+        <DisplayErrorIcon domain={domain} />
       </td>
       <td className="p-4">
         <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">

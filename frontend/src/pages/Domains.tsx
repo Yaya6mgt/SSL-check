@@ -154,7 +154,7 @@ export default function Domains() {
           })
         };
       }));
-
+      console.log(domains)
     } catch (err) {
       console.error("Erreur lors du scan manuel:", err);
     } finally {
@@ -221,7 +221,7 @@ export default function Domains() {
     const days = calculateDays(domain.checks[0]?.validTo) ?? 0;
     const isValid = domain.checks[0]?.isValid;
 
-    const matchesDays = days >= filterDays[0] && days <= filterDays[1];
+    const matchesDays = (days >= filterDays[0] && days <= filterDays[1]) || !isValid
     const matchesServer = selectedServerIds.includes(domain.serverId);
 
     let matchesStatus = true;

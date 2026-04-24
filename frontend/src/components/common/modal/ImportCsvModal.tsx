@@ -14,6 +14,8 @@ export function ImportCsvModal({ isOpen, onClose, onImportSuccess }: ImportCsvMo
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const token = localStorage.getItem('token') || '';
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -31,6 +33,9 @@ export function ImportCsvModal({ isOpen, onClose, onImportSuccess }: ImportCsvMo
       const response = await fetch(`${API_URL}/domains/import`, {
         method: 'POST',
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
