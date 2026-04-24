@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/utils/api';
 import { Mail, Loader2, Trash2, UserPlus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface Recipient {
   id: number;
@@ -15,6 +16,8 @@ export default function RecipientsManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const token = localStorage.getItem('token') || '';
+  const { user } = useAuth();
+  const myRole = user?.role || 'viewer';
 
   useEffect(() => {
     fetchRecipients();
@@ -51,6 +54,7 @@ export default function RecipientsManagement() {
   };
 
   const toggleStatus = async (id: number, currentStatus: boolean) => {
+    if (myRole === 'viewer') return;
     try {
       const updated = await apiFetch<Recipient>(`recipients/${id}`, {
         method: 'PUT',
@@ -83,28 +87,29 @@ export default function RecipientsManagement() {
           <p className="text-slate-500 font-medium text-sm">Emails recevant les notifications d'expiration SSL</p>
         </div>
       </div>
-
-      <form onSubmit={handleAddRecipient} className="mb-8 flex gap-3 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm">
-        <div className="relative flex-1">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="email"
+      {myRole !== 'viewer' && (
+        <form onSubmit={handleAddRecipient} className="mb-8 flex gap-3 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm">
+          <div className="relative flex-1">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="email"
             placeholder="nouvel.email@entreprise.com"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
             required
           />
-        </div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-secondary hover:bg-secondary-600 text-white font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2 disabled:opacity-50"
-        >
-          {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
-          Ajouter
-        </button>
-      </form>
+          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-secondary hover:bg-secondary-600 text-white font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+            {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
+            Ajouter
+          </button>
+        </form>
+      )}
 
       <div className="bg-white rounded-4xl border border-slate-200 shadow-sm overflow-hidden">
         {recipients.length === 0 ? (
@@ -131,14 +136,18 @@ export default function RecipientsManagement() {
                       {r.isActive ? 'ACTIF' : 'INACTIF'}
                     </button>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleDelete(r.id, r.email)}
-                      className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
+                  {myRole !== 'viewer' ? (
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDelete(r.id, r.email)}
+                        className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  ) : (
+                    <td className="px-6 py-4 text-right text-slate-400 italic">Accès protégé</td>
+                  )}
                 </tr>
               ))}
             </tbody>
