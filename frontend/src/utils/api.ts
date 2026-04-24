@@ -46,6 +46,7 @@ export async function apiFetch<T>(
 
   if (response.status === 401) {
     localStorage.removeItem('token');
+    console.warn('Token invalide ou expiré, redirection vers la page de connexion');
     window.location.href = '/login';
   }
 

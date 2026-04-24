@@ -4,30 +4,49 @@ import ServerDetail from './pages/ServerDetail';
 import Domains from './pages/Domains';
 import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
+import RecipientsManagement from './pages/RecipientsManagement';
+import UsersManagement from './pages/UsersManagement';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const PrivateRoute = () => {
-  const token = localStorage.getItem('token');
+  const token = useAuth().token;
 
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+const AdminRoute = () => {
+  const { user, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  if (user?.role !== 'admin') return <Navigate to="/" replace />;
+
+  return <Outlet />;
+};
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
 
-        <Route element={<PrivateRoute />}>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/server/:id" element={<ServerDetail />} />
-            <Route path="/domains" element={<Domains />} />
+          <Route element={<PrivateRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/server/:id" element={<ServerDetail />} />
+              <Route path="/domains" element={<Domains />} />
+              <Route path="/recipients" element={<RecipientsManagement />} />
+              <Route element={<AdminRoute />}>
+                <Route path="/users" element={<UsersManagement />} />
+              </Route>
+            </Route>
           </Route>
-        </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

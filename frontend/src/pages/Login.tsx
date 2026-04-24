@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -11,6 +12,7 @@ function Login() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
@@ -39,7 +41,8 @@ function Login() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      window.location.href = '/';
+      login(data.token, data.user);
+      window.location.href = '/login';
     } catch (err: any) {
       setError(err.message);
     } finally {

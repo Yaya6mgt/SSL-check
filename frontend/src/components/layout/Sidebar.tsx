@@ -1,24 +1,27 @@
-import { clearAuthData } from '@/utils/localStorage';
+import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard,
   Globe,
   Settings,
   LogOut,
-  UserCircle
+  UserCircle,
+  Users,
+  Mail
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Sidebar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Domaines', path: '/domains', icon: Globe },
+    { name: 'Destinataires', path: '/recipients', icon: Mail },
   ];
 
   const handleDeconnexion = () => {
-    clearAuthData();
-    window.location.href = '/login';
+    logout();
   }
 
   const isActive = (path: string) => location.pathname === path;
@@ -31,8 +34,8 @@ export default function Sidebar() {
             <UserCircle size={32} />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">Jean Dupont</p>
-            <p className="text-xs text-slate-400 font-medium">Administrateur</p>
+            <p className="text-sm font-bold text-white">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs text-slate-400 font-medium">{user?.role}</p>
           </div>
         </div>
       </div>
@@ -52,6 +55,18 @@ export default function Sidebar() {
             <span className="font-medium">{item.name}</span>
           </Link>
         ))}
+        {user?.role === 'admin' && (
+          <Link
+            to="/users"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
+              isActive("/users")
+                ? 'bg-secondary text-white shadow-md'
+                : 'hover:bg-secondary/30 hover:text-white'
+            }`}>
+            <Users size={20} className={isActive("/users") ? 'text-white' : 'text-slate-400 group-hover:text-secondary'} />
+            <span>Utilisateurs</span>
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-slate-800 space-y-1">
