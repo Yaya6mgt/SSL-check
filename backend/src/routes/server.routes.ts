@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
 import { Server } from '@/models/Server';
+import { authMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const servers = await Server.findAll({
       include: [{
@@ -23,9 +24,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
-    const server = await Server.findByPk(req.params.id, {
+    const { name, ipAddress } = req.body;
+    if (!name || !ipAddress) {
+      return res.status(400).json({ error: "Nom et IP requis" });
+    }
+    const newServer = await Server.create({ name, ipAddress });
+    res.status(201).json(newServer);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const server = await Server.findByPk(Number(id), {
       include: [{
         model: Domain,
         include: [{
@@ -42,12 +57,12 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, ipAddress } = req.body;
 
-    const server = await Server.findByPk(id);
+    const server = await Server.findByPk(Number(id));
 
     if (!server) {
       return res.status(404).json({ error: "Serveur non trouvé" });
@@ -65,23 +80,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
-  try {
-    const { name, ipAddress } = req.body;
-    if (!name || !ipAddress) {
-      return res.status(400).json({ error: "Nom et IP requis" });
-    }
-    const newServer = await Server.create({ name, ipAddress });
-    res.status(201).json(newServer);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Server.destroy({ where: { id } });
+    const deleted = await Server.destroy({ where: { id: Number(id) } });
     if (deleted) {
       res.status(204).send();
     } else {

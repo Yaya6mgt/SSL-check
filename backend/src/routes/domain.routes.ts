@@ -6,10 +6,12 @@ import { performAndSaveSslCheck } from '@/services/ssl.service';
 import multer from 'multer';
 import { importCsvData } from '@/services/import.service';
 import { generateDomainsCsv } from '@/services/export.service';
+import { authMiddleware } from '@/middleware/auth.middleware';
 
 const router = Router();
+const upload = multer({ dest: 'uploads/' });
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const domains = await Domain.findAll({
       include: [
@@ -27,7 +29,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     console.log("Requête reçue pour créer un domaine avec les données:", req.body);
     const { hostname, serverId } = req.body;
@@ -46,32 +48,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { hostname, serverId } = req.body;
-
-    const domain = await Domain.findByPk(id);
-
-    if (!domain) {
-      return res.status(404).json({ error: "Domaine non trouvé" });
-    }
-
-    await domain.update({
-      hostname: hostname?.trim().toLowerCase() || domain.hostname,
-      serverId: serverId || domain.serverId
-    });
-
-    await performAndSaveSslCheck(domain);
-
-    res.json(domain);
-  } catch (error: any) {
-    console.error("Erreur modification domaine:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/check-all', async (req, res) => {
+router.post('/check-all', authMiddleware, async (req, res) => {
   try {
     const domains = await Domain.findAll();
     console.log(`[BATCH] Relance de ${domains.length} scans SSL...`);
@@ -92,10 +69,61 @@ router.post('/check-all', async (req, res) => {
   }
 });
 
-router.post('/:id/check', async (req, res) => {
+router.post('/import', authMiddleware, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Aucun fichier fourni" });
+
+    await importCsvData(req.file.path);
+    res.json({ message: "Importation réussie" });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/export', authMiddleware, async (req, res) => {
+  try {
+    const csvData = await generateDomainsCsv();
+
+    const fileName = `export-monitoring-${new Date().toISOString().split('T')[0]}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    return res.status(200).send(csvData);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de l'export" });
+  }
+});
+
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const domain = await Domain.findByPk(id);
+    const { hostname, serverId } = req.body;
+
+    const domain = await Domain.findByPk(Number(id));
+
+    if (!domain) {
+      return res.status(404).json({ error: "Domaine non trouvé" });
+    }
+
+    await domain.update({
+      hostname: hostname?.trim().toLowerCase() || domain.hostname,
+      serverId: serverId || domain.serverId
+    });
+
+    await performAndSaveSslCheck(domain);
+
+    res.json(domain);
+  } catch (error: any) {
+    console.error("Erreur modification domaine:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/check', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const domain = await Domain.findByPk(Number(id));
 
     if (!domain) {
       return res.status(404).json({ error: "Domaine non trouvé" });
@@ -111,10 +139,10 @@ router.post('/:id/check', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Domain.destroy({ where: { id } });
+    const deleted = await Domain.destroy({ where: { id: Number(id) } });
     if (deleted) {
       res.status(204).send();
     } else {
@@ -125,32 +153,5 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-const upload = multer({ dest: 'uploads/' });
-
-router.post('/import', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: "Aucun fichier fourni" });
-
-    await importCsvData(req.file.path);
-    res.json({ message: "Importation réussie" });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/export', async (req, res) => {
-  try {
-    const csvData = await generateDomainsCsv();
-
-    const fileName = `export-monitoring-${new Date().toISOString().split('T')[0]}.csv`;
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-
-    return res.status(200).send(csvData);
-  } catch (error) {
-    res.status(500).json({ error: "Erreur lors de l'export" });
-  }
-});
 
 export default router;
