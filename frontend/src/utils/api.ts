@@ -44,6 +44,11 @@ export async function apiFetch<T>(
         : JSON.stringify(body),
   });
 
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  }
+
   const isJson = response.headers.get('content-type')?.includes('application/json');
   const data = isJson
     ? await response.json().catch(() => null)

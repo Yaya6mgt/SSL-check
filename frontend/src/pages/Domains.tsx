@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Download, Upload, RotateCcw } from 'lucide-react';
+import { Plus, Download, Upload } from 'lucide-react';
 import { apiFetch } from '@/utils/api';
 import { calculateDays } from '@/utils/status';
 import { initialDomainState, type Domain, type NewDomainState } from '@/types/domain.type';

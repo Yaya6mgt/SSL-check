@@ -84,7 +84,7 @@ export default function Dashboard() {
         <p className="text-slate-500">Statut synthétique des serveurs Onlineformapro</p>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95 cursor-pointer"
+          className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-secondary-200 active:scale-95 cursor-pointer"
         >
           <Plus size={20} />
           Nouveau Serveur

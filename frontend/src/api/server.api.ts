@@ -1,9 +1,12 @@
 import type { IServer } from "@/types/server.type";
 import { ApiError, apiFetch } from "@/utils/api";
+import { getToken } from "@/utils/localStorage";
+
+const token = getToken;
 
 export const fetchServers = async (setServers: React.Dispatch<React.SetStateAction<IServer[]>>, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
   try {
-    const data = await apiFetch<IServer[]>(`servers`);
+    const data = await apiFetch<IServer[]>(`servers`, {token});
     setServers(data);
   } catch (err) {
     if (err instanceof ApiError) {
@@ -18,7 +21,7 @@ export const fetchServers = async (setServers: React.Dispatch<React.SetStateActi
 
 export const fetchServer = async (id: number, setServer: React.Dispatch<React.SetStateAction<IServer | null>>, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
   try {
-    const data = await apiFetch<IServer>(`servers/${id}`);
+    const data = await apiFetch<IServer>(`servers/${id}`, {token});
     setServer(data);
   } catch (err) {
     if (err instanceof ApiError) {
@@ -36,6 +39,7 @@ export const updateServer = async (id: number, name: string, ipAdress: string) =
     console.log("Données envoyées à l'API:", { name, ipAdress });
     await apiFetch(`servers/${id}`, {
       method: 'PUT',
+      token,
       body: { name, ipAdress }
     });
   } catch (err) {

@@ -21,9 +21,9 @@ function FormDomainModal({ isOpen, onClose, title, server, handleAddDomain, addL
       title={title || "Nouveau domaine"}
     >
       <form onSubmit={handleAddDomain} className="space-y-4">
-        <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3 mb-4">
-            <div className="text-blue-600 mt-0.5"><Globe size={18}/></div>
-            <p className="text-xs text-blue-700">
+        <div className="bg-secondary-50 p-4 rounded-lg flex items-start gap-3 mb-4">
+            <div className="text-secondary mt-0.5"><Globe size={18}/></div>
+            <p className="text-xs text-secondary">
               Le domaine sera automatiquement rattaché au serveur <strong>{server.name}</strong>.
             </p>
         </div>
@@ -34,7 +34,7 @@ function FormDomainModal({ isOpen, onClose, title, server, handleAddDomain, addL
             autoFocus
             type="text"
             placeholder="ex: google.com"
-            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition-all"
             value={newDomainName}
             onChange={e => setNewDomainName(e.target.value)}
           />
@@ -43,7 +43,7 @@ function FormDomainModal({ isOpen, onClose, title, server, handleAddDomain, addL
           <button
             type="submit"
             disabled={addLoading}
-            className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="w-full bg-secondary text-white py-3 rounded-lg font-bold hover:bg-secondary-hover transition-colors disabled:opacity-50 cursor-pointer"
           >
             {addLoading ? 'Traitement...' : 'Ajouter le domaine'}
           </button>

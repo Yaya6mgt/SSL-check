@@ -1,3 +1,4 @@
+import { clearAuthData } from '@/utils/localStorage';
 import {
   LayoutDashboard,
   Globe,
@@ -14,6 +15,11 @@ export default function Sidebar() {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Domaines', path: '/domains', icon: Globe },
   ];
+
+  const handleDeconnexion = () => {
+    clearAuthData();
+    window.location.href = '/login';
+  }
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -39,7 +45,7 @@ export default function Sidebar() {
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
               isActive(item.path)
                 ? 'bg-secondary text-white shadow-md'
-                : 'hover:bg-[#d012425b] hover:text-white'
+                : 'hover:bg-secondary/30 hover:text-white'
             }`}
           >
             <item.icon size={20} className={isActive(item.path) ? 'text-white' : 'text-slate-400 group-hover:text-secondary'} />
@@ -51,15 +57,15 @@ export default function Sidebar() {
       <div className="p-4 border-t border-slate-800 space-y-1">
         <Link
           to="/settings"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-all"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/30 hover:text-white transition-all"
         >
-          <Settings size={20} className="text-slate-400" />
+          <Settings size={20} className="text-slate-400 group-hover:text-secondary" />
           <span className="font-medium">Paramètres</span>
         </Link>
 
         <button
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-          onClick={() => console.log('Déconnexion...')}
+          onClick={handleDeconnexion}
         >
           <LogOut size={20} />
           <span className="font-medium">Déconnexion</span>
