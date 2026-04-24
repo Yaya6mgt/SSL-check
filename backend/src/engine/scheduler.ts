@@ -31,7 +31,7 @@ export function initScheduler() {
     console.log("Automatisation initialisée");
     runMonitoringCycle();
     // 0 8 * * * pour tous les jours à 8h du matin
-    cron.schedule('*/1 * * * *', async () => {
+    cron.schedule('0 8 * * *', async () => {
         await runMonitoringCycle();
     });
 }

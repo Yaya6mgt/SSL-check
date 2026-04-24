@@ -12,7 +12,7 @@ export const performAndSaveSslCheck = async (domain: Domain) => {
       validTo: result.validTo,
       issuer: result.issuer,
       lastCheck: new Date(),
-      errorMessage: null
+      errorMessage: result.errorMessage
     });
 
     console.log(`Scan réussi pour : ${domain.hostname}`);
@@ -22,7 +22,7 @@ export const performAndSaveSslCheck = async (domain: Domain) => {
       domainId: domain.id,
       isValid: false,
       lastCheck: new Date(),
-      errorMessage: scanError.message
+      errorMessage: scanError.errorMessage
     });
     return {check: failedCheck, status: 'failed', error: scanError.message};
   }

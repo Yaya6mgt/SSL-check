@@ -3,11 +3,12 @@ import * as tls from 'node:tls';
 
 export interface SSLCheckResult {
     domain: string;
-    validTo: Date;
-    daysRemaining: number;
-    issuer: string;
-    sans: string[];
+    validTo?: Date;
+    daysRemaining?: number;
+    issuer?: string;
+    sans?: string[];
     isValid: boolean;
+    errorMessage?: string;
 }
 
 export function checkCertificate(host: string): Promise<SSLCheckResult> {
@@ -17,10 +18,12 @@ export function checkCertificate(host: string): Promise<SSLCheckResult> {
             port: 443,
             servername: host,
             timeout: 5000,
+            rejectUnauthorized: false
         }, () => {
             const cert: tls.PeerCertificate = socket.getPeerCertificate();
 
             if (!cert || Object.keys(cert).length === 0) {
+                socket.destroy();
                 return reject(new Error("Aucun certificat reçu."));
             }
 
@@ -29,13 +32,21 @@ export function checkCertificate(host: string): Promise<SSLCheckResult> {
             const diffTime = validTo.getTime() - now.getTime();
             const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+            let errorMsg = undefined;
+            const isValid = (socket as any).authorized || false;
+            if (!isValid) {
+                errorMsg = (socket as any).authorizationError || "Certificat non approuvé (Self-signed ou Host mismatch)";
+                console.log("SSL non valide pour " + host + " : " + errorMsg);
+            }
+
             const result: SSLCheckResult = {
                 domain: host,
                 validTo: validTo,
                 daysRemaining: daysRemaining,
-                issuer: String(cert.issuer.O) || "Inconnu",
+                issuer: cert.issuer.O ? String(cert.issuer.O) : "Inconnu",
                 sans: parseSANs(cert.subjectaltname),
-                isValid: true
+                isValid: isValid,
+                errorMessage: errorMsg
             };
 
             socket.end();
@@ -43,19 +54,23 @@ export function checkCertificate(host: string): Promise<SSLCheckResult> {
         });
 
         socket.on('error', (err: Error) => {
-            if ('code' in err) {
-                const nodeErr = err as NodeJS.ErrnoException;
-                if (nodeErr.code === 'ENOTFOUND') reject(new Error(`DNS : Domaine ${host} introuvable.`));
-                else if (nodeErr.code === 'ECONNREFUSED') reject(new Error(`Port 443 fermé sur ${host}.`));
-                else reject(new Error(`${nodeErr.code} : ${nodeErr.message}`));
-            } else {
-                reject(err);
+            const nodeErr = err as NodeJS.ErrnoException;
+            let message = "";
+
+            switch (nodeErr.code) {
+                case 'ENOTFOUND': message = `DNS : Domaine ${host} introuvable.`; break;
+                case 'ECONNREFUSED': message = `Port 443 fermé sur ${host}.`; break;
+                case 'ETIMEDOUT':
+                case 'EHOSTUNREACH': message = `Hôte ${host} injoignable (Timeout réseau/Firewall).`; break;
+                default: message = `${nodeErr.code || 'Erreur'} : ${err.message}`;
             }
+            socket.destroy();
+            resolve({ domain: host, isValid: false, errorMessage: message });
         });
 
         socket.on('timeout', () => {
             socket.destroy();
-            reject(new Error(`Timeout sur ${host}`));
+            resolve({ domain: host, isValid: false, errorMessage: `Le serveur ${host} ne répond pas (Timeout 5s).` });
         });
     });
 }

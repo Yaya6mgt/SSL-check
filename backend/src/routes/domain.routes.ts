@@ -71,6 +71,7 @@ router.post('/check-all', editorMiddleware, async (req, res) => {
 });
 
 router.post('/import', editorMiddleware, upload.single('file'), async (req, res) => {
+  console.log("Fichier reçu pour importation:", req.file);
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier fourni" });
 
