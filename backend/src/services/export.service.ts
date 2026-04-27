@@ -2,9 +2,10 @@ import { Domain } from '@/models/Domain';
 import { SslCheck } from '@/models/SslCheck';
 import { Server } from '@/models/Server';
 
-export const generateDomainsCsv = async () => {
+export const generateDomainsCsv = async (serverId: number = 0) => {
   try {
     const domains = await Domain.findAll({
+      ...(serverId > 0 ? { where: { serverId } } : {}),
       include: [
           {
             model: Server,
@@ -34,6 +35,42 @@ export const generateDomainsCsv = async () => {
         `"${(lastCheck?.issuer || 'N/A').replace(/"/g, '""')}"`,
         `"${lastCheck?.lastCheck ? lastCheck.lastCheck.toISOString() : 'N/A'}"`,
         `"${(lastCheck?.errorMessage || '').replace(/,/g, ' ').replace(/"/g, '""')}"`
+      ];
+
+      csvContent += row.join(',') + '\n';
+    }
+
+    return csvContent;
+  } catch (error) {
+      console.error("Erreur génération CSV :", error);
+      throw error;
+  }
+};
+
+export const generateServersCsv = async () => {
+  try {
+    const servers = await Server.findAll({
+      include: [{
+        model: Domain,
+        include: [{
+          model: SslCheck,
+          limit: 1,
+          order: [['lastCheck', 'DESC']]
+        }]
+      }]
+    });
+
+    const headers = ['Serveur', 'IP', 'Nombre de domaines', 'Dernier Check'];
+    let csvContent = headers.join(',') + '\n';
+
+    for (const server of servers) {
+      const lastCheck = server.domains?.[0]?.checks?.[0];
+
+      const row = [
+        `"${server.name}"`,
+        `"${server.ipAddress}"`,
+        `"${server.domains?.length || 0}"`,
+        `"${lastCheck?.lastCheck ? lastCheck.lastCheck.toISOString() : 'N/A'}"`
       ];
 
       csvContent += row.join(',') + '\n';

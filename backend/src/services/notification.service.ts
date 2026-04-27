@@ -83,7 +83,7 @@ export class NotificationService {
                 tableRows += `
                     <tr>
                         <td style="padding:10px; border:1px solid #ddd;">${alert.hostname}</td>
-                        <td style="padding:10px; border:1px solid #ddd;">${alert.serverName}</td>t(alert.
+                        <td style="padding:10px; border:1px solid #ddd;">${alert.serverName}</td>
                         <td style="padding:10px; border:1px solid #ddd;">${alert.days}</td>
                         <td style="padding:10px; border:1px solid #ddd; color: ${alert.color}; font-weight: bold;">
                             ${alert.level} ${statusInfo}

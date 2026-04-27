@@ -4,6 +4,7 @@ import { SslCheck } from '@/models/SslCheck';
 import { Server } from '@/models/Server';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { editorMiddleware } from '@/middleware/editor.middleware';
+import { generateDomainsCsv, generateServersCsv } from '@/services/export.service';
 
 const router = Router();
 
@@ -35,6 +36,37 @@ router.post('/', editorMiddleware, async (req, res) => {
     res.status(201).json(newServer);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/export', authMiddleware, async (req, res) => {
+  try {
+    const csvData = await generateServersCsv();
+
+    const fileName = `export-servers-${new Date().toISOString().split('T')[0]}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    return res.status(200).send(csvData);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de l'export" });
+  }
+});
+
+router.get('/:id/export', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const csvData = await generateDomainsCsv(Number(id));
+
+    const fileName = `export-server-${id}-${new Date().toISOString().split('T')[0]}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    return res.status(200).send(csvData);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de l'export" });
   }
 });
 

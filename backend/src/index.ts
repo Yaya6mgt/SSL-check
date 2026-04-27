@@ -19,7 +19,7 @@ app.use(express.json());
 async function startApp() {
   try {
     await connectDB();
-    const csvPath = '/app/data/inventory.csv';
+    const csvPath = '/app/data/data.csv';
 
     console.log(`Recherche du CSV ici : ${csvPath}`);
 
@@ -27,9 +27,9 @@ async function startApp() {
         console.log("Fichier trouvé ! Lancement de l'import...");
         await importCsvData(csvPath);
     } else {
-        console.error(`Erreur : Le fichier ${csvPath} est introuvable.`);
-        if (fs.existsSync('/app')) {
-            console.log("Contenu de /app :", fs.readdirSync('/app'));
+        console.error(`Aucun fichier trouvé : Le fichier ${csvPath} est introuvable.`);
+        if (fs.existsSync('/app/data')) {
+            console.log("Contenu de /app/data :", fs.readdirSync('/app/data'));
         }
     }
     initScheduler();
