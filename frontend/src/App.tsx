@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import RecipientsManagement from './pages/RecipientsManagement';
 import UsersManagement from './pages/UsersManagement';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import Settings from './pages/Settings';
 
 const PrivateRoute = () => {
   const token = useAuth().token;
@@ -37,6 +38,7 @@ function App() {
               <Route path="/server/:id" element={<ServerDetail />} />
               <Route path="/domains" element={<Domains />} />
               <Route path="/recipients" element={<RecipientsManagement />} />
+              <Route path="/settings" element={<Settings />} />
               <Route element={<AdminRoute />}>
                 <Route path="/users" element={<UsersManagement />} />
               </Route>

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/utils/api';
-import { Shield, User as UserIcon, Mail, Loader2, Trash2 } from 'lucide-react';
+import { Shield, User as UserIcon, Mail, Loader2, Trash2, UserPlus } from 'lucide-react';
 import type { User } from '@/types/user.type';
+import FormUserModal from '@/components/common/modal/FormUserModal';
 
 export default function UsersManagement() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const token = localStorage.getItem('token') || '';
 
@@ -85,6 +87,14 @@ export default function UsersManagement() {
         <h1 className="text-3xl font-black text-slate-800 tracking-tight">Gestion des utilisateurs</h1>
         <p className="text-slate-500 font-medium">Administrez les accès et rôles de la plateforme</p>
       </div>
+
+      <button
+        onClick={() => setIsAddModalOpen(true)}
+        className="flex items-center gap-2 mb-6 bg-secondary text-white font-bold px-6 py-3 rounded-2xl hover:bg-secondary-600 transition-all shadow-lg shadow-secondary-100"
+      >
+        <UserPlus size={18} />
+        Ajouter un utilisateur
+      </button>
 
       <div className="bg-white rounded-4xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
@@ -170,6 +180,11 @@ export default function UsersManagement() {
           </tbody>
         </table>
       </div>
+      <FormUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onUserAdded={(newUser) => setUsers(prev => [newUser, ...prev])}
+      />
     </div>
   );
 }
