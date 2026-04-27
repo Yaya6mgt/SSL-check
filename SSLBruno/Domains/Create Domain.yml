@@ -1,0 +1,22 @@
+info:
+  name: Create Domain
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3000/api/domains
+  body:
+    type: json
+    data: |-
+      {
+        "hostmane": "test.com",
+        "serverId": 1
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

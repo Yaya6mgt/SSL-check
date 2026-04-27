@@ -1,0 +1,22 @@
+info:
+  name: Update Domain
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:3000/api/domains/1
+  body:
+    type: json
+    data: |-
+      {
+        "hostname": "new-domain.com",
+        "serverId": 1
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

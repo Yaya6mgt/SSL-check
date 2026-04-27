@@ -1,0 +1,22 @@
+info:
+  name: Update Server
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:3000/api/servers/1
+  body:
+    type: json
+    data: |-
+      {
+        "name": "name-server",
+        "ipAddress": "192.666.666.69"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

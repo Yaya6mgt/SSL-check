@@ -81,6 +81,8 @@ VM-Live-OFA,141.94.131.3,live.olfp.net
 VM-Live-OFA,141.94.131.3,self-signed.badssl.com
 ```
 
+*Note: Si vous souhaitez lancer le projet et importer des données, il faut ajouter un fichier data.csv dans le dossier /backend/data avec le format ci-dessus.*
+
 ---
 
 ## Diagnostics SSL

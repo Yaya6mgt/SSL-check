@@ -1,0 +1,22 @@
+info:
+  name: Create Server
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3000/api/servers
+  body:
+    type: json
+    data: |-
+      {
+        "name": "name-server",
+        "ipAddress": "192.666.666.69"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
