@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { Domain } from '@/types/domain.type';
 import type { IServer } from '@/types/server.type';
-import { Plus, ArrowLeft, Trash2, Pencil } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, Download } from 'lucide-react';
 import { fetchServer, updateServer } from '@/api/server.api';
 import FormDomainModal from '@/components/common/modal/FormDomainModal';
 import { checkDomain, deleteDomain, postDomain } from '@/api/domain.api';
@@ -11,6 +11,8 @@ import { RefreshButton } from '@/components/common/utils/RefreshButton';
 import FormServerModal from '@/components/common/modal/FormServerModal';
 import { DomainsFilters } from '@/components/filter/DomainsFilter';
 import DisplayErrorIcon from '@/components/domains/DisplayErrorIcon';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ServerDetail() {
   const { id } = useParams();
@@ -122,6 +124,36 @@ export default function ServerDetail() {
     }
   };
 
+  const handleExport = async (serverId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${API_URL}/servers/${serverId}/export`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de l\'export');
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export-server-${serverId}-${new Date().toISOString().slice(0,10)}.csv`;
+
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (err) {
+      console.error("Erreur export:", err);
+    }
+  };
+
   const openEditServerModal = () => {
     if (server) {
       setEditServerData({ name: server.name, ipAddress: server.ipAddress });
@@ -175,6 +207,13 @@ export default function ServerDetail() {
         filterDays={filterDays}
         setFilterDays={setFilterDays}
       />
+
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => handleExport(server.id)} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <Download size={16} />
+          Exporter
+        </button>
+      </div>
 
       <div className="space-y-4">
         {sortedAndFiltered && sortedAndFiltered.length > 0 ? (

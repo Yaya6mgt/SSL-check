@@ -164,10 +164,31 @@ export default function Domains() {
 
   const handleExport = async () => {
     try {
-      window.location.href = `${API_URL}/domains/export`;
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${API_URL}/domains/export`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de l\'export');
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export-domaines-${new Date().toISOString().slice(0,10)}.csv`;
+
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
 
     } catch (err) {
-      alert("Erreur lors de l'export");
+      console.error("Erreur export:", err);
     }
   };
 

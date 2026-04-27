@@ -5,11 +5,13 @@ import type { IServer } from '@/types/server.type';
 import type { Domain } from '@/types/domain.type';
 import { apiFetch } from '@/utils/api';
 import { ServerHealthBar } from '@/components/ServerHealthbar';
-import { Plus, Server, Trash2 } from 'lucide-react';
+import { Download, Plus, Server, Trash2 } from 'lucide-react';
 import { fetchServers } from '@/api/server.api';
 import FormServerModal from '@/components/common/modal/FormServerModal';
 import { ServerFilter } from '@/components/filter/ServerFilter';
 import SearchBar from '@/components/common/utils/SearchBar';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Dashboard() {
   const [servers, setServers] = useState<IServer[]>([]);
@@ -59,6 +61,36 @@ export default function Dashboard() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${API_URL}/servers/export`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de l\'export');
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export-servers-${new Date().toISOString().slice(0,10)}.csv`;
+
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (err) {
+      console.error("Erreur export:", err);
+    }
+  };
+
   const filteredServers = servers.filter(server => {
     const matchesServer = selectedServerIds.includes(server.id);
     const matchesSearch = server.name.toLowerCase().includes(search.toLowerCase()) || server.ipAddress.includes(search);
@@ -98,6 +130,12 @@ export default function Dashboard() {
           selectedServerIds={selectedServerIds}
           onChange={setSelectedServerIds}
         />
+      </div>
+      <div className="flex gap-2 mb-4">
+        <button onClick={handleExport} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <Download size={16} />
+          Exporter
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
