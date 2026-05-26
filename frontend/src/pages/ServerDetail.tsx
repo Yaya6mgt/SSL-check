@@ -57,8 +57,16 @@ export default function ServerDetail() {
   };
 
   useEffect(() => {
-    setLoading(true);
-    fetchServer(Number(id), setServer, setLoading);
+    const  fetchData = async () => {
+      setLoading(true);
+      try {
+        await fetchServer(Number(id), setServer, setLoading);
+      } catch {
+        alert("Erreur lors du chargement du serveur");
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
@@ -69,7 +77,7 @@ export default function ServerDetail() {
       setIsModalOpen(false);
       setNewDomainName('');
       fetchServer(Number(id), setServer, setLoading);
-    } catch (err) {
+    } catch {
       alert("Erreur lors de l'ajout du domaine");
     } finally {
       setAddLoading(false);
@@ -117,7 +125,7 @@ export default function ServerDetail() {
 
       setIsEditServerModalOpen(false);
       fetchServer(Number(id), setServer, setLoading);
-    } catch (err) {
+    } catch {
       alert("Erreur lors de la mise à jour");
     } finally {
       setUpdateLoading(false);

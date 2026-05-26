@@ -15,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Dashboard() {
   const [servers, setServers] = useState<IServer[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalServerlOpen, setIsModalServerlOpen] = useState(false);
   const [newServer, setNewServer] = useState({ name: '', ipAddress: '' });
   const [loading, setLoading] = useState(false);
 
@@ -25,9 +25,14 @@ export default function Dashboard() {
   useEffect(() => { fetchServers(setServers, setLoading); }, []);
 
   useEffect(() => {
-    if (servers.length > 0) {
-      setSelectedServerIds(servers.map(s => s.id));
-    }
+    const fetchSelectedServerIds = async () => {
+      const allIds = servers.map(s => s.id);
+      if (servers.length > 0) {
+        setSelectedServerIds(allIds);
+      }
+    };
+
+    fetchSelectedServerIds();
   }, [servers]);
 
 
@@ -39,10 +44,10 @@ export default function Dashboard() {
         method: 'POST',
         body: newServer
       });
-      setIsModalOpen(false);
+      setIsModalServerlOpen(false);
       setNewServer({ name: '', ipAddress: '' });
       fetchServers(setServers, setLoading);
-    } catch (err) {
+    } catch {
       alert("Erreur lors de l'ajout du serveur");
     }
   };
@@ -56,7 +61,7 @@ export default function Dashboard() {
     try {
       await apiFetch(`servers/${serverId}`, { method: 'DELETE' });
       fetchServers(setServers, setLoading);
-    } catch (err) {
+    } catch {
       alert("Erreur lors de la suppression du serveur");
     }
   };
@@ -115,7 +120,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-extrabold text-slate-900">Infrastructure SSL</h1>
         <p className="text-slate-500">Statut synthétique des serveurs Onlineformapro</p>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsModalServerlOpen(true)}
           className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-secondary-200 active:scale-95 cursor-pointer"
         >
           <Plus size={20} />
@@ -201,8 +206,8 @@ export default function Dashboard() {
         )}
       </div>
       <FormServerModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isModalServerlOpen}
+        onClose={() => setIsModalServerlOpen(false)}
         onSubmit={handleAddServer}
         loading={loading}
         serverData={newServer}

@@ -13,7 +13,7 @@ export const deleteDomain = async (domainId: number) => {
       method: 'DELETE',
       token,
     });
-  } catch (err) {
+  } catch {
     alert("Erreur lors de la suppression du domaine");
   }
 };
@@ -49,6 +49,37 @@ export const postDomain = async (hostname: string, serverId: string) => {
     } else {
       console.error("Erreur inconnue:", err);
     }
+  }
+};
+
+export const updateDomain = async (domainId: number, hostname: string, serverId: string) => {
+  try {
+      await apiFetch(`domains/${domainId}`, {
+        method: 'PUT',
+        body: {
+            hostname,
+            serverId: Number(serverId)
+        },
+        token,
+      });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  }
+};
+
+export const deleteDomainById = async (domainId: number) => {
+
+  try {
+    await apiFetch(`domains/${domainId}`, {
+      method: 'DELETE',
+      token,
+    });
+  } catch {
+    alert("Erreur lors de la suppression du domaine");
   }
 };
 

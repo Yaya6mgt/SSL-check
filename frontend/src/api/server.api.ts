@@ -34,6 +34,37 @@ export const fetchServer = async (id: number, setServer: React.Dispatch<React.Se
   }
 };
 
+export const postServer = async (name: string, ipAddress: string) => {
+  try {
+      await apiFetch('servers', {
+        method: 'POST',
+        body: { name, ipAddress },
+        token,
+      });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  }
+};
+
+export const deleteServer = async (id: number) => {
+  try {
+    await apiFetch(`servers/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+  }
+};
+
 export const updateServer = async (id: number, name: string, ipAdress: string) => {
   try {
     console.log("Données envoyées à l'API:", { name, ipAdress });

@@ -44,9 +44,12 @@ export default function Domains() {
   }, []);
 
   useEffect(() => {
-    if (servers.length > 0) {
-      setSelectedServerIds(servers.map(s => s.id));
-    }
+    const fetchServersIds = async () => {
+      if (servers.length > 0) {
+        setSelectedServerIds(servers.map(s => s.id));
+      }
+    };
+    fetchServersIds();
   }, [servers]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
