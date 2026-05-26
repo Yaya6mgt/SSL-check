@@ -6,6 +6,8 @@ import { Alert } from '@/models/Alert';
 import dotenv from 'dotenv';
 import { User } from '@/models/User';
 import { Recipient } from '@/models/Recipients';
+import { AlertThresholdSetting } from '@/models/AlertThresholdSetting';
+import { AlertEmailTemplateSetting } from '@/models/AlertEmailTemplateSetting';
 
 dotenv.config();
 
@@ -16,7 +18,7 @@ export const sequelize = new Sequelize({
   username: process.env.DB_USER!,
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
-  models: [Server, Domain, SslCheck, Alert, User, Recipient],
+    models: [Server, Domain, SslCheck, Alert, User, Recipient, AlertThresholdSetting, AlertEmailTemplateSetting],
   logging: false,
   define: {
     underscored: true,

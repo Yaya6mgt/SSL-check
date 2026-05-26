@@ -9,6 +9,8 @@ import serverRoutes from './routes/server.routes';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import recipientRoutes from './routes/recipient.routes';
+import alertThresholdRoutes from './routes/alert-threshold.routes';
+import emailTemplateRoutes from './routes/email-template.routes';
 
 const app = express();
 app.use(cors());
@@ -39,6 +41,8 @@ async function startApp() {
     app.use('/api/auth', authRoutes);
     app.use('/api/users', userRoutes);
     app.use('/api/recipients', recipientRoutes);
+    app.use('/api/alert-thresholds', alertThresholdRoutes);
+    app.use('/api/email-template', emailTemplateRoutes);
 
     app.listen(PORT, () => {
         console.log(`Serveur hybride prêt sur le port ${PORT}`);

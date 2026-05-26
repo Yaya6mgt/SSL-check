@@ -1,9 +1,9 @@
-<div style="font-family: sans-serif; border: 1px solid #e0e0e0; padding: 20px; border-radius: 10px;">
-    <h2>Récapitulatif des alertes SSL</h2>
-    <p>Les domaines suivants nécessitent une action :</p>
-    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">
+<div style="font-family: sans-serif; border: 1px solid {{borderColor}}; padding: 20px; border-radius: 10px;">
+    <h2 style="color: {{primaryColor}};">{{title}}</h2>
+    <p style="color: {{introColor}};">{{introText}}</p>
+    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; border: 1px solid {{borderColor}};">
         <thead>
-            <tr style="background: #eee;">
+            <tr style="background: {{headerBackgroundColor}}; color: {{headerTextColor}};">
                 <th>Domaine</th>
                 <th>Serveur</th>
                 <th>Statut / Jours</th>

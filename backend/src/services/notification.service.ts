@@ -1,10 +1,10 @@
 import nodemailer from 'nodemailer';
-import fs from 'fs/promises';
-import path from 'path';
 import { Alert } from '@/models/Alert';
 import { getAlertThreshold } from '@/utils/health-status';
 import { Recipient } from '@/models/Recipients';
 import { translateSslError } from '@/utils/error-ssl-translator';
+import { AlertThresholdService } from './alert-threshold.service';
+import { EmailTemplateService } from './email-template.service';
 
 export class NotificationService {
     private static transporter = nodemailer.createTransport({
@@ -17,6 +17,8 @@ export class NotificationService {
     });
 
     static async checkAndPrepareAlert(domainId: number, hostname: string, serverName: string, daysRemaining: number | null, error?: string, isValid?: boolean) {
+        const thresholds = await AlertThresholdService.getCurrentThresholds();
+
         if (error || daysRemaining === null || !isValid) {
             const sentToday = await Alert.findOne({
                 where: {
@@ -40,9 +42,9 @@ export class NotificationService {
                 error: error
             };
         }
-        const threshold = getAlertThreshold(daysRemaining);
+        const threshold = getAlertThreshold(daysRemaining, thresholds);
 
-        if (threshold === null && daysRemaining > 30) {
+        if (threshold === null && daysRemaining > thresholds.info) {
             await Alert.destroy({ where: { domainId } });
             return null;
         }
@@ -60,8 +62,8 @@ export class NotificationService {
             hostname,
             serverName,
             days: daysRemaining !== null ? `${daysRemaining}j` : 'ERREUR',
-            level: threshold === 7 ? 'CRITIQUE' : threshold === 14 ? 'ATTENTION' : 'INFO',
-            color: threshold === 7 ? '#D32F2F' : threshold === 14 ? '#F57C00' : '#0288D1',
+            level: threshold === thresholds.critical ? 'CRITIQUE' : threshold === thresholds.warning ? 'ATTENTION' : 'INFO',
+            color: threshold === thresholds.critical ? '#D32F2F' : threshold === thresholds.warning ? '#F57C00' : '#0288D1',
             threshold: threshold.toString()
         };
     }
@@ -74,7 +76,7 @@ export class NotificationService {
         if (emailList.length === 0) {
             emailList = [process.env.ADMIN_EMAIL || "admin-default@onlineformapro.com"];
         }
-        const templatePath = path.join(__dirname, '..', 'templates', 'alert-email.html');
+        const templateSettings = await EmailTemplateService.getCurrentSettings();
 
         try {
             let tableRows = "";
@@ -82,17 +84,16 @@ export class NotificationService {
                 const statusInfo = alert.error ? `<br/><small style="color: #666;">${translateSslError(alert.error)}</small>` : '';
                 tableRows += `
                     <tr>
-                        <td style="padding:10px; border:1px solid #ddd;">${alert.hostname}</td>
-                        <td style="padding:10px; border:1px solid #ddd;">${alert.serverName}</td>
-                        <td style="padding:10px; border:1px solid #ddd;">${alert.days}</td>
-                        <td style="padding:10px; border:1px solid #ddd; color: ${alert.color}; font-weight: bold;">
+                        <td style="padding:10px; border:1px solid ${templateSettings.borderColor};">${alert.hostname}</td>
+                        <td style="padding:10px; border:1px solid ${templateSettings.borderColor};">${alert.serverName}</td>
+                        <td style="padding:10px; border:1px solid ${templateSettings.borderColor};">${alert.days}</td>
+                        <td style="padding:10px; border:1px solid ${templateSettings.borderColor}; color: ${alert.color}; font-weight: bold;">
                             ${alert.level} ${statusInfo}
                         </td>
                     </tr>`;
             }
 
-            let htmlContent = await fs.readFile(templatePath, 'utf-8');
-            htmlContent = htmlContent.replace(/{{tableContent}}/g, tableRows);
+            const htmlContent = await EmailTemplateService.renderEmailHtml(tableRows, templateSettings);
 
             await this.transporter.sendMail({
                 from: '"SSL Monitor Onlineformapro" <noreply@onlineformapro.com>',
