@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom
 import Dashboard from './pages/Dashboard';
 import ServerDetail from './pages/ServerDetail';
 import Domains from './pages/Domains';
+import Servers from './pages/Servers';
 import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import RecipientsManagement from './pages/RecipientsManagement';
@@ -20,7 +21,7 @@ const AdminRoute = () => {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (user?.role !== 'admin') return <Navigate to="/" replace />;
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') return <Navigate to="/" replace />;
 
   return <Outlet />;
 };
@@ -37,6 +38,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/server/:id" element={<ServerDetail />} />
               <Route path="/domains" element={<Domains />} />
+              <Route path="/servers" element={<Servers />} />
               <Route path="/recipients" element={<RecipientsManagement />} />
               <Route path="/settings" element={<Settings />} />
               <Route element={<AdminRoute />}>

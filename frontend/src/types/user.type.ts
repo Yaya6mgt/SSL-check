@@ -3,5 +3,5 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'super_admin' | 'admin' | 'editor' | 'viewer';
 }

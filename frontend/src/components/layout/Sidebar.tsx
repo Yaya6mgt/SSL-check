@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard,
+  Server,
   Globe,
   Settings,
   LogOut,
@@ -14,14 +15,31 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Domaines', path: '/domains', icon: Globe },
-    { name: 'Destinataires', path: '/recipients', icon: Mail },
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, restriction: [] },
+    { name: 'Serveurs', path: '/servers', icon: Server, restriction: [] },
+    { name: 'Domaines', path: '/domains', icon: Globe, restriction: [] },
+    { name: 'Destinataires', path: '/recipients', icon: Mail, restriction: [] },
+    { name: 'Utilisateurs', path: '/users', icon: Users, restriction: ['admin', 'super_admin'] },
   ];
 
   const handleDeconnexion = () => {
     logout();
   }
+
+  const roleDisplay = (role: string | undefined) => {
+    switch (role) {
+      case 'viewer':
+        return 'Visiteur';
+      case 'editor':
+        return 'Éditeur';
+      case 'admin':
+        return 'Administrateur';
+      case 'super_admin':
+        return 'Super Administrateur';
+      default:
+        return role;
+    }
+  };
 
   return (
     <aside className="w-64 h-screen bg-primary text-slate-300 flex flex-col  shadow-xl">
@@ -32,18 +50,17 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="text-sm font-bold text-white">{user?.firstName} {user?.lastName}</p>
-            <p className="text-xs text-slate-400 font-medium">{user?.role}</p>
+            <p className="text-xs text-slate-400 font-medium">{roleDisplay(user?.role)}</p>
           </div>
         </div>
       </div>
 
       <nav className="flex-1 p-4 space-y-2 mt-4">
         {menuItems.map((item) => (
-          <SidebarLink key={item.path} to={item.path} icon={item.icon} label={item.name} />
+          (!item.restriction.length || item.restriction.includes(user?.role || '')) && (
+            <SidebarLink key={item.path} to={item.path} icon={item.icon} label={item.name} />
+          )
         ))}
-        {user?.role === 'admin' && (
-          <SidebarLink to="/users" icon={Users} label="Utilisateurs" />
-        )}
       </nav>
 
       <div className="p-4 border-t border-slate-800 space-y-1">

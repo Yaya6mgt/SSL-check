@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/utils/api';
@@ -19,20 +21,19 @@ export default function Settings() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
+    const checkRecipientStatus = async () => {
+      try {
+        const data = await apiFetch<{ exists: boolean, isActive?: boolean }>('recipients/exist', { token });
+        setIsRecipient(data.exists);
+        if (data.isActive !== undefined) setIsRecipientActive(data.isActive);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoadingRecipient(false);
+      }
+    };
     checkRecipientStatus();
-  }, []);
-
-  const checkRecipientStatus = async () => {
-    try {
-      const data = await apiFetch<{ exists: boolean, isActive?: boolean }>('recipients/exist', { token });
-      setIsRecipient(data.exists);
-      if (data.isActive !== undefined) setIsRecipientActive(data.isActive);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoadingRecipient(false);
-    }
-  };
+  }, [token]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

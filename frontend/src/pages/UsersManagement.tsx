@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/utils/api';
-import { Shield, User as UserIcon, Mail, Loader2, Trash2, UserPlus } from 'lucide-react';
+import { Shield, User as UserIcon, Mail, Loader2, Trash2, UserPlus, Crown } from 'lucide-react';
 import type { User } from '@/types/user.type';
 import FormUserModal from '@/components/common/modal/FormUserModal';
 
@@ -14,26 +14,29 @@ export default function UsersManagement() {
 
   const token = localStorage.getItem('token') || '';
 
-
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    let isMounted = true;
 
-  const fetchUsers = async () => {
-    try {
-      const data = await apiFetch<User[]>('users', { token });
-      const sorted = [...data].sort((a, b) => {
-        if (a.id === currentUser?.id) return -1;
-        if (b.id === currentUser?.id) return 1;
-        return 0;
-      });
-      setUsers(sorted);
-    } catch (err) {
-      console.error("Erreur chargement utilisateurs", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchUsers = async () => {
+      try {
+        const data = await apiFetch<User[]>('users', { token });
+        const sorted = [...data].sort((a, b) => {
+          if (a.id === currentUser?.id) return -1;
+          if (b.id === currentUser?.id) return 1;
+          return 0;
+        });
+        if (isMounted) setUsers(sorted);
+      } catch (err) {
+        console.error("Erreur chargement utilisateurs", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+
+    return () => { isMounted = false; };
+  }, [token, currentUser?.id]);
 
   const handleRoleChange = async (targetId: number, newRole: string) => {
     setUpdatingId(targetId);
@@ -49,6 +52,7 @@ export default function UsersManagement() {
 
       setUsers(prev => prev.map(u => u.id === targetId ? updatedUser : u));
     } catch (err) {
+      console.error(err);
       alert("Erreur lors de la modification du rôle");
     } finally {
       setUpdatingId(null);
@@ -75,6 +79,7 @@ export default function UsersManagement() {
 
       setUsers(prev => prev.filter(u => u.id !== targetId));
     } catch (err) {
+      console.error(err);
       alert("Erreur lors de la suppression de l'utilisateur");
     } finally {
       setUpdatingId(null);
@@ -110,7 +115,8 @@ export default function UsersManagement() {
             {users.map((u) => {
               const isMe = u.id === currentUser?.id;
               const isAdmin = u.role === 'admin';
-              const isDisabled = isMe || (isAdmin && u.id !== currentUser?.id);
+              const isSuperAdmin = u.role === 'super_admin';
+              const isDisabled = isMe || isSuperAdmin || (isAdmin && currentUser?.role !== 'super_admin' && u.id !== currentUser?.id);
 
               return (
                 <tr key={u.id} className={`group hover:bg-slate-50/50 transition-colors ${isMe ? 'bg-secondary-50/30' : ''}`}>
@@ -135,14 +141,16 @@ export default function UsersManagement() {
                   </td>
                   <td className="px-6 py-5">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                      u.role === 'admin'
+                      u.role === 'super_admin'
+                      ? 'bg-purple-50 text-purple-600 border border-purple-100'
+                      : u.role === 'admin'
                       ? 'bg-amber-50 text-amber-600 border border-amber-100'
                       : u.role === 'editor'
                       ? 'bg-green-50 text-green-600 border border-green-100'
                       : 'bg-slate-100 text-slate-600 border border-slate-200'
                     }`}>
-                      {u.role === 'admin' ? <Shield size={12} /> : u.role === 'editor' ? <UserIcon size={12} /> : <UserIcon size={12} />}
-                      {u.role === 'admin' ? 'Administrateur' : u.role === 'editor' ? 'Éditeur' : 'Lecteur'}
+                      {u.role === 'super_admin' ? <Crown size={12} /> : u.role === 'admin' ? <Shield size={12} /> : u.role === 'editor' ? <UserIcon size={12} /> : <UserIcon size={12} />}
+                      {u.role === 'super_admin' ? 'Super Administrateur' : u.role === 'admin' ? 'Administrateur' : u.role === 'editor' ? 'Éditeur' : 'Lecteur'}
                     </span>
                   </td>
                   <td className="px-6 py-5">
