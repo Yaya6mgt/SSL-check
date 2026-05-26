@@ -7,7 +7,8 @@ import {
   LogOut,
   UserCircle,
   Users,
-  Mail
+  Mail,
+  AlertCircle
 } from 'lucide-react';
 import SidebarLink from './SidebarLink';
 
@@ -19,6 +20,7 @@ export default function Sidebar() {
     { name: 'Serveurs', path: '/servers', icon: Server, restriction: [] },
     { name: 'Domaines', path: '/domains', icon: Globe, restriction: [] },
     { name: 'Destinataires', path: '/recipients', icon: Mail, restriction: [] },
+    { name: 'Alertes', path: '/alerts', icon: AlertCircle, restriction: ['admin', 'super_admin'] },
     { name: 'Utilisateurs', path: '/users', icon: Users, restriction: ['admin', 'super_admin'] },
   ];
 

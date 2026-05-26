@@ -20,19 +20,19 @@ export default function RecipientsManagement() {
   const myRole = user?.role || 'viewer';
 
   useEffect(() => {
-    fetchRecipients();
-  }, []);
+    const fetchRecipients = async () => {
+      try {
+        const data = await apiFetch<Recipient[]>('recipients', { token });
+        setRecipients(data);
+      } catch (err) {
+        console.error("Erreur chargement destinataires", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const fetchRecipients = async () => {
-    try {
-      const data = await apiFetch<Recipient[]>('recipients', { token });
-      setRecipients(data);
-    } catch (err) {
-      console.error("Erreur chargement destinataires", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchRecipients();
+  }, [token]);
 
   const handleAddRecipient = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +46,8 @@ export default function RecipientsManagement() {
       });
       setRecipients(prev => [...prev, created]);
       setNewEmail('');
-    } catch (err: any) {
-      alert(err.message || "Erreur lors de l'ajout");
+    } catch {
+      alert("Erreur lors de l'ajout");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +62,7 @@ export default function RecipientsManagement() {
         token,
       });
       setRecipients(prev => prev.map(r => r.id === id ? updated : r));
-    } catch (err) {
+    } catch {
       alert("Erreur lors de la modification du statut");
     }
   };
@@ -72,7 +72,7 @@ export default function RecipientsManagement() {
     try {
       await apiFetch(`recipients/${id}`, { method: 'DELETE', token });
       setRecipients(prev => prev.filter(r => r.id !== id));
-    } catch (err) {
+    } catch {
       alert("Erreur lors de la suppression");
     }
   };
