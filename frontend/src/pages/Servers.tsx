@@ -175,12 +175,12 @@ export default function Servers() {
 
   return (
   <div className="p-8 max-w-7xl mx-auto">
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Tous les serveurs</h1>
           <p className="text-slate-500">{servers.length} serveurs enregistrés au total</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mt-4 sm:mt-0">
           <button
             onClick={() => openAddModal()}
             className="flex items-center gap-2 px-4 py-2.5 bg-secondary hover:bg-secondary-hover text-white rounded-xl font-bold transition-all active:scale-95 shadow-sm"

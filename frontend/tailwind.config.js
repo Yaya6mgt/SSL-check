@@ -11,6 +11,17 @@ module.exports = {
       '80': '0.8',
       '100': '1',
     },
+    screens: {
+      min1: '300px',
+      min2: '400px',
+      min3: '450px',
+      min4: '500px',
+      min5: '600px',
+      min6: '768px',
+      min7: '1024px',
+      min8: '1280px',
+      min9: '1536px',
+    },
     extend: {
       colors: {
         transparent: 'transparent',

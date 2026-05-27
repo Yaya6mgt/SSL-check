@@ -8,9 +8,17 @@ interface RowLineServersProps {
   handleDeleteServer: (serverId: number) => void;
   onRowClick: () => void;
   isExpanded: boolean;
+  gridLayout: string;
 }
 
-function RowLineServers({ server, openEditModal, handleDeleteServer, onRowClick, isExpanded }: RowLineServersProps) {
+function RowLineServers({
+  server,
+  openEditModal,
+  handleDeleteServer,
+  onRowClick,
+  isExpanded,
+  gridLayout
+}: RowLineServersProps) {
   const domains = server.domains || [];
 
   const stats = domains.reduce(
@@ -33,53 +41,72 @@ function RowLineServers({ server, openEditModal, handleDeleteServer, onRowClick,
   );
 
   return (
-    <tr className="hover:bg-slate-50/80 transition-colors group cursor-pointer" onClick={onRowClick}>
-      <td className="p-4 font-medium text-slate-700">
-        <div className="flex items-center gap-2">
-          {isExpanded ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
-          <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+    <div
+      onClick={onRowClick}
+      className={`p-5 flex flex-col gap-4 cursor-pointer hover:bg-slate-50/80 transition-colors group
+                 ${gridLayout}`}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="text-slate-400 group-hover:text-slate-600 transition-colors shrink-0">
+          {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+        </div>
+        <div className="min-w-0">
+          <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider md:hidden block mb-1">
+            Serveur
+          </span>
+          <span className="inline-block text-sm font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg truncate max-w-full">
             {server.name || 'Non nommé'}
           </span>
         </div>
-      </td>
+      </div>
 
-      <td className="p-4">
-        <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+      <div className="min-w-0">
+        <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider md:hidden block mb-1">
+          Adresse IP
+        </span>
+        <span className="inline-block text-xs sm:text-sm font-mono text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
           {server.ipAddress || "Pas d'IP"}
         </span>
-      </td>
+      </div>
 
-      <td className="p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-semibold text-red-700 bg-red-100 px-2 py-1 rounded-full">
+      <div>
+        <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider md:hidden block mb-1">
+          Domaines rattachés
+        </span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
             {stats.critical} critique{stats.critical > 1 ? "s" : ""}
           </span>
-          <span className="text-[10px] font-semibold text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
+          <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-100 px-2.5 py-0.5 rounded-full">
             {stats.warning} en danger
           </span>
-          <span className="text-[10px] font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+          <span className="text-[10px] font-bold text-green-700 bg-green-50 border border-green-100 px-2.5 py-0.5 rounded-full">
             {stats.healthy} sain{stats.healthy > 1 ? "s" : ""}
           </span>
         </div>
-      </td>
+      </div>
 
-      <td className="p-4 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
-        <div className="inline-flex items-center gap-1 px-2 py-1">
-          <button
-            onClick={() => openEditModal(server.id)}
-            className="p-2 text-slate-400 hover:text-blue-600 transition-colors mr-3"
-          >
-            <Pencil size={18} />
-          </button>
-          <button
-            onClick={() => handleDeleteServer(server.id)}
-            className="p-2 text-slate-400 hover:text-red-600 transition-colors mr-3"
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
-      </td>
-    </tr>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center justify-end gap-1 pt-3 border-t border-slate-100 md:pt-0 md:border-0 w-full"
+      >
+        <button
+          onClick={() => openEditModal(server.id)}
+          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-lg"
+          title="Modifier le serveur"
+        >
+          <Pencil size={18} />
+        </button>
+        <button
+          onClick={() => handleDeleteServer(server.id)}
+          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+          title="Supprimer le serveur"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+
+    </div>
   );
 }
 

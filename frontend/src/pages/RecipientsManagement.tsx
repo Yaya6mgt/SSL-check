@@ -88,7 +88,7 @@ export default function RecipientsManagement() {
         </div>
       </div>
       {myRole !== 'viewer' && (
-        <form onSubmit={handleAddRecipient} className="mb-8 flex gap-3 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm">
+        <form onSubmit={handleAddRecipient} className="mb-8 flex flex-col sm:flex-row gap-3 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="relative flex-1">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -115,43 +115,67 @@ export default function RecipientsManagement() {
         {recipients.length === 0 ? (
           <div className="p-10 text-center text-slate-400 font-medium">Aucun destinataire configuré.</div>
         ) : (
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Email</th>
-                <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Statut</th>
-                <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {recipients.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-slate-700">{r.email}</td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => toggleStatus(r.id, r.isActive)}
-                      className={`mx-auto flex items-center gap-2 font-bold text-xs transition-colors ${r.isActive ? 'text-green-600' : 'text-slate-400'}`}
-                    >
-                      {r.isActive ? <ToggleRight size={28} className="text-green-500" /> : <ToggleLeft size={28} />}
-                      {r.isActive ? 'ACTIF' : 'INACTIF'}
-                    </button>
-                  </td>
-                  {myRole !== 'viewer' ? (
-                    <td className="px-6 py-4 text-right">
+          <div className="w-full overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
+            <table className="w-full md:min-w-full text-left border-collapse table-fixed">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="w-[50%] px-4 text-[10px] sm:text-base sm:px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">
+                    Email
+                  </th>
+                  <th className="w-[25%] px-4 text-[10px] sm:text-base sm:px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">
+                    Statut
+                  </th>
+                  <th className="w-[25%] px-4 text-[10px] sm:text-base sm:px-6 py-4font-black text-slate-400 uppercase tracking-widest text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 bg-white">
+                {recipients.map((r) => (
+                  <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
+                    {/* Email avec troncature mathématique pour ne pas casser la ligne */}
+                    <td className="px-2 sm:px-6 py-4 text-xs sm:text-base font-bold text-slate-700 truncate max-w-0">
+                      <span className="block truncate" title={r.email}>
+                        {r.email}
+                      </span>
+                    </td>
+
+                    <td className="px-4 sm:px-6 py-4 text-center">
                       <button
-                        onClick={() => handleDelete(r.id, r.email)}
-                        className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        onClick={() => toggleStatus(r.id, r.isActive)}
+                        className={`mx-auto flex items-center justify-center gap-2 font-bold text-[11px] sm:text-xs transition-colors ${
+                          r.isActive ? 'text-green-600' : 'text-slate-400'
+                        }`}
                       >
-                        <Trash2 size={18} />
+                        {r.isActive ? (
+                          <ToggleRight size={24} className="text-green-500 shrink-0" />
+                        ) : (
+                          <ToggleLeft size={24} className="shrink-0" />
+                        )}
+                        <span className="hidden sm:inline">{r.isActive ? 'ACTIF' : 'INACTIF'}</span>
                       </button>
                     </td>
-                  ) : (
-                    <td className="px-6 py-4 text-right text-slate-400 italic">Accès protégé</td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+                    {myRole !== 'viewer' ? (
+                      <td className="px-4 sm:px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDelete(r.id, r.email)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all inline-flex items-center justify-center"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    ) : (
+                      <td className="px-4 sm:px-6 py-4 text-right text-xs text-slate-400 italic">
+                        <span className="hidden sm:inline">Accès protégé</span>
+                        <span className="sm:hidden">Bloqué</span>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

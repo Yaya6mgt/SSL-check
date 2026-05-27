@@ -10,6 +10,7 @@ import { fetchServers } from '@/api/server.api';
 import { RefreshButton } from '@/components/common/utils/RefreshButton';
 import { ImportCsvModal } from '@/components/common/modal/ImportCsvModal';
 import { DomainsFilters } from '@/components/filter/DomainsFilter';
+import type { FilterStatus } from '@/components/filter/DomainsFilter';
 import { ServerFilter } from '@/components/filter/ServerFilter';
 import TableDomains from '@/components/domains/TableDomains';
 import SearchBar from '@/components/common/utils/SearchBar';
@@ -31,7 +32,7 @@ export default function Domains() {
   const [currentDomainId, setCurrentDomainId] = useState<number | null>(null);
   const [isImportModalOpen, setImportModalOpen] = useState(false);
   const [filterDays, setFilterDays] = useState<[number, number]>([0, 200]);
-  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('ALL');
   const [selectedServerIds, setSelectedServerIds] = useState<number[]>([]);
 
   const fetchData = async () => {
@@ -273,12 +274,12 @@ export default function Domains() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex flex-col md:flex-row justify-between md:items-center mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Tous les domaines</h1>
           <p className="text-slate-500">{domains.length} domaines enregistrés au total</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex mt-4 items-center gap-3">
           <button
             onClick={() => openAddModal()}
             className="flex items-center gap-2 px-4 py-2.5 bg-secondary hover:bg-secondary-hover text-white rounded-xl font-bold transition-all active:scale-95 shadow-sm"

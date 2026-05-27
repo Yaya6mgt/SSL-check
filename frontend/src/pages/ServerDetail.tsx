@@ -189,7 +189,7 @@ export default function ServerDetail() {
         <ArrowLeft size={18} /> Retour au Dashboard
       </Link>
 
-      <div className="bg-primary text-white p-8 rounded-2xl mb-8 shadow-lg flex justify-between items-center">
+      <div className="bg-primary text-white p-8 rounded-2xl mb-8 shadow-lg flex flex-col sm:flex-row sm:justify-between sm:items-center">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{server.name}</h1>
@@ -206,7 +206,7 @@ export default function ServerDetail() {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20 cursor-pointer"
+          className="mt-4 md:mt-0 flex items-center gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20 cursor-pointer"
         >
           <Plus size={20} />
           Ajouter un domaine
@@ -236,8 +236,8 @@ export default function ServerDetail() {
 
             return (
               <div key={domain.id} className="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-red-100 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 flex row `}>
+                <div className="flex flex-col min3:flex-row min3:items-center gap-4">
+                  <div className="order-2 sm:order-1 p-2 flex flex-row">
                     <RefreshButton
                         onClick={() => handleManualCheck(domain.id)}
                         isLoading={refreshingId === domain.id}
@@ -253,11 +253,13 @@ export default function ServerDetail() {
                     </button>
                   </div>
 
-                  <DisplayErrorIcon domain={domain} />
+                  <div className="order-1 sm:order-2 flex items-center gap-4">
+                    <DisplayErrorIcon domain={domain} displayName={false} />
 
-                  <div>
-                    <h3 className="text-lg font-mono font-bold text-slate-800">{domain.hostname}</h3>
-                    <p className="text-sm text-slate-400">Émetteur: {domain.checks[0]?.issuer || 'Inconnu'}</p>
+                    <div>
+                      <h3 className="text-lg font-mono font-bold text-slate-800">{domain.hostname}</h3>
+                      <p className="text-sm text-slate-400">Émetteur: {domain.checks[0]?.issuer || 'Inconnu'}</p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">

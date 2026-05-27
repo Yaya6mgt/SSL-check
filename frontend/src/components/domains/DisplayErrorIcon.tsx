@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Globe, AlertTriangle, X } from 'lucide-react';
 import { translateSslError } from '@/utils/error-ssl-translator';
+import type { Domain } from '@/types/domain.type';
 
-export default function DisplayErrorIcon({ domain }: { domain: any }) {
+export default function DisplayErrorIcon({ domain, displayName = true }: { domain: Domain; displayName?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isValid = domain.checks?.[0]?.isValid;
 
@@ -25,9 +26,11 @@ export default function DisplayErrorIcon({ domain }: { domain: any }) {
           </div>
         )}
 
-        <span className={`font-mono font-bold ${isValid ? 'text-slate-700' : 'text-red-700'}`}>
-          {domain.hostname}
-        </span>
+        {displayName && (
+          <span className={`font-mono font-bold ${isValid ? 'text-slate-700' : 'text-red-700'}`}>
+            {domain.hostname}
+          </span>
+        )}
       </div>
 
       {isModalOpen && (

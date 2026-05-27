@@ -1,6 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
 
-function SidebarLink({ to, icon: Icon, label }: { to: string, icon: React.ElementType, label: string }) {
+function SidebarLink({
+  to,
+  icon: Icon,
+  label,
+  onNavigate,
+}: {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+  onNavigate?: () => void;
+}) {
   const location = useLocation();
 
   const isActive = location.pathname === to;
@@ -8,6 +18,7 @@ function SidebarLink({ to, icon: Icon, label }: { to: string, icon: React.Elemen
   return (
     <Link
       to={to}
+      onClick={onNavigate}
       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
         isActive
           ? 'bg-secondary text-white shadow-md'
