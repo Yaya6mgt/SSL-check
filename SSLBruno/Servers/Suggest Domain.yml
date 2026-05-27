@@ -5,7 +5,17 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/api/suggest-domains
+  url: http://localhost:3000/api/servers/suggest-domains?ipAddress=142.251.34.206
+  params:
+    - name: ipAddress
+      value: 142.251.34.206
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ipAddress": "141.94.131.1"
+      }
   auth: inherit
 
 settings:

@@ -40,6 +40,25 @@ docker-compose up -d --build
 docker-compose logs -f
 ```
 
+Si tu veux éviter de retenir les commandes Docker, tu peux aussi utiliser le `Makefile` à la racine :
+
+```bash
+make dev
+make logs
+make prod
+make down
+```
+
+En développement, le backend tourne avec rechargement automatique. Si vous modifiez le code dans `backend/src`, le service redémarre tout seul.
+
+Pour lancer le mode production, utilisez le profil dédié :
+
+```bash
+docker-compose --profile prod up -d --build
+```
+
+Dans ce mode, le backend utilise le build compilé et n'embarque pas le montage du code source.
+
 ### 4. Lancement Local (sans Docker)
 
 Si vous ne souhaitez pas utiliser Docker, vous devez lancer le Backend et le Frontend séparément. Assurez-vous d'avoir un serveur PostgreSQL actif.

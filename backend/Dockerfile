@@ -1,3 +1,16 @@
+FROM node:24-alpine AS dev
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+ENV CHOKIDAR_USEPOLLING=true
+ENV CHOKIDAR_INTERVAL=1000
+
+CMD ["npm", "run", "dev"]
+
 FROM node:24-alpine AS build
 
 WORKDIR /app

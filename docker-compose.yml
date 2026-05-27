@@ -22,13 +22,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: build
+      target: dev
     container_name: ssl-monitor-app
     depends_on:
       db:
         condition: service_healthy
     env_file: .env
     restart: on-failure
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "1000"
     volumes:
         - ./backend:/app
         - /app/node_modules
@@ -37,6 +40,26 @@ services:
     command: npm run dev
     ports:
       - "3000:3000"
+
+  ssl-monitor-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ssl-monitor-app-prod
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+        - ./data:/app/data
+        - ./uploads:/app/uploads
+    command: npm start
+    ports:
+      - "3001:3000"
+    profiles:
+      - prod
 
   ssl-frontend:
     build:
