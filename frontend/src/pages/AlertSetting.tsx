@@ -5,6 +5,7 @@ import { defaultEmailTemplateSettings, type EmailTemplateSettings } from '@/type
 import { fetchThresholds, updateThresholds } from '@/api/thresholds.api';
 import { fetchEmailTemplatePreviewHtml, fetchEmailTemplateSettings, updateEmailTemplateSettings } from '@/api/email-template.api';
 import EmailTemplateSettingsSection from '@/components/settings/EmailTemplateSettingsSection';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 const DEFAULT_THRESHOLDS: AlertThresholds = {
 	critical: 7,
@@ -171,7 +172,7 @@ export default function AlertSetting() {
 				<div>
 					<h1 className="text-3xl font-black text-slate-800 tracking-tight">Paramètres des alertes</h1>
 					<p className="text-slate-500 font-medium text-sm mt-1">
-						Ajuste ici les seuils et le modèle du mail envoyé aux destinataires.
+						Ajustez ici les seuils et le modèle du mail envoyé aux destinataires.
 					</p>
 				</div>
 			</div>
@@ -181,9 +182,13 @@ export default function AlertSetting() {
 					<div className="p-3 bg-red-50 text-red-600 rounded-2xl">
 						<ShieldAlert size={22} />
 					</div>
-					<div>
+					<div className="flex items-center gap-2">
 						<h2 className="text-2xl font-bold text-slate-800">Seuils d alerte</h2>
-						<p className="text-slate-500 text-sm">Ces valeurs pilotent la classification des certificats SSL.</p>
+						<InfoTooltip text={[
+              "Ces valeurs pilotent la classification des certificats SSL.",
+              "L'ordre attendu est: critique < danger < sain.",
+              "L'unité de mesure est en jours."
+              ]} />
 					</div>
 				</div>
 
@@ -233,10 +238,7 @@ export default function AlertSetting() {
 						</div>
 					</label>
 
-					<div className="md:col-span-3 flex items-center justify-between gap-4 flex-wrap pt-2">
-						<p className="text-sm text-slate-500">
-							L ordre attendu est: critique &lt; danger &lt; sain.
-						</p>
+					<div className="md:col-span-3 flex items-center justify-end gap-4 flex-wrap pt-2">
 						<button
 							type="submit"
 							disabled={isSavingThresholds}

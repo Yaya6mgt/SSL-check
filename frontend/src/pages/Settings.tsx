@@ -127,7 +127,7 @@ export default function Settings() {
           <button
             type="submit"
             disabled={isUpdating}
-            className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white font-bold py-3 rounded-2xl hover:bg-slate-700 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-secondary text-white font-bold py-3 rounded-2xl hover:bg-secondary-500 transition-all disabled:opacity-50 cursor-pointer"
           >
             {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
             Enregistrer les modifications

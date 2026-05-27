@@ -1,5 +1,5 @@
 import { checkDomain, deleteDomain, updateDomain } from "@/api/domain.api";
-import { fetchServers, postServer, updateServer } from "@/api/server.api";
+import { deleteServer, fetchServers, postServer, updateServer } from "@/api/server.api";
 import FormDomainServerModal from "@/components/common/modal/FormDomainServerModal";
 import FormServerModal from "@/components/common/modal/FormServerModal";
 import SearchBar from "@/components/common/utils/SearchBar";
@@ -7,7 +7,6 @@ import TableServers from "@/components/servers/TableServers";
 import type { Domain, NewDomainState } from "@/types/domain.type";
 import { initialDomainState } from "@/types/domain.type";
 import type { IServer } from "@/types/server.type";
-import { apiFetch } from "@/utils/api";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -152,7 +151,7 @@ export default function Servers() {
     if (!window.confirm(`Supprimer le serveur "${serverToDelete.name}" et tous ses domaines ?`)) return;
 
     try {
-      await apiFetch(`servers/${serverId}`, { method: 'DELETE' });
+      await deleteServer(serverId);
       fetchServers(setServers, setLoading);
     } catch {
       alert("Erreur lors de la suppression du serveur");

@@ -1,5 +1,6 @@
 import { Loader2, RotateCcw, Save } from 'lucide-react';
 import type { EmailTemplateSettings } from '@/types/email-template.type';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface EmailTemplateSettingsSectionProps {
   template: EmailTemplateSettings;
@@ -28,10 +29,10 @@ function EmailTemplateSettingsSection({
     <section className="grid grid-cols-1 xl:grid-cols-[1fr_1.1fr] gap-6 items-start">
       <form onSubmit={onSubmit} className="bg-white rounded-4xl border border-slate-200 shadow-sm p-8 space-y-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Modèle du mail</h2>
-            <p className="text-slate-500 text-sm">Modifiez seulement le texte et les couleurs principales.</p>
-          </div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-slate-800">Modèle du mail</h2>
+              <InfoTooltip text={["Modifiez seulement le texte et les couleurs principales."]} />
+            </div>
 
           <button
             type="button"
@@ -50,7 +51,7 @@ function EmailTemplateSettingsSection({
             type="text"
             value={template.title}
             onChange={(e) => onTemplateChange('title', e.target.value)}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-300"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-secondary-200 focus:border-secondary-300"
           />
         </label>
 
@@ -60,7 +61,7 @@ function EmailTemplateSettingsSection({
             rows={4}
             value={template.introText}
             onChange={(e) => onTemplateChange('introText', e.target.value)}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-300 resize-none"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-secondary-200 focus:border-secondary-300 resize-none"
           />
         </label>
 
@@ -149,10 +150,10 @@ function EmailTemplateSettingsSection({
 
       <div className="bg-white rounded-4xl border border-slate-200 shadow-sm p-5 space-y-4 min-h-175">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Preview du mail</h2>
-            <p className="text-slate-500 text-sm">Cette prévisualisation utilise les mêmes placeholders que l email réel.</p>
-          </div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-slate-800">Preview du mail</h2>
+              <InfoTooltip text={["Cette prévisualisation utilise les mêmes placeholders que l'email réel."]} />
+            </div>
           {isLoadingPreview && <Loader2 className="animate-spin text-slate-400" size={20} />}
         </div>
 
