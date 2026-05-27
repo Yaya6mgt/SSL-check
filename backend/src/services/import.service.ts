@@ -2,7 +2,14 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import { Server } from '@/models/Server';
 import { Domain } from '@/models/Domain';
-import { performAndSaveSslCheck } from '@/services/ssl.service'; // Notre nouveau service
+import { performAndSaveSslCheck } from '@/services/ssl.service';
+
+const getServerNameFromHostname = (hostname: string) => {
+  const normalizedHostname = hostname.trim().toLowerCase();
+  const rootName = normalizedHostname.replace(/\.[^.]+$/, '');
+
+  return rootName || normalizedHostname;
+};
 
 export const importCsvData = async (filePath: string) => {
   const results: any[] = [];
@@ -15,13 +22,16 @@ export const importCsvData = async (filePath: string) => {
       .on('end', async () => {
         try {
           for (const row of results) {
+            const hostname = row.hostname.trim().toLowerCase();
+            const serverName = row.server_name?.trim() || getServerNameFromHostname(hostname);
+
             const [server] = await Server.findOrCreate({
               where: { ipAddress: row.ip_address.trim() },
-              defaults: { name: row.server_name.trim() }
+              defaults: { name: serverName }
             });
 
             const [domain, created] = await Domain.findOrCreate({
-              where: { hostname: row.hostname.trim().toLowerCase() },
+              where: { hostname },
               defaults: { serverId: server.id }
             });
 

@@ -65,8 +65,8 @@ npm run dev
 
 Le système permet d'importer une liste de domaines via un fichier CSV. Pour que l'importation réussisse, votre fichier doit respecter scrupuleusement la structure suivante :
 
-**Colonnes obligatoires :**
-1. `server_name` : Nom ou label de la machine/serveur.
+**Colonnes :**
+1. `server_name` : Nom ou label de la machine/serveur. Optionnel à l'import, il sera déduit du hostname si absent.
 2. `ip_address` : Adresse IP du serveur.
 3. `hostname` : Le nom de domaine complet (FQDN) à tester.
 

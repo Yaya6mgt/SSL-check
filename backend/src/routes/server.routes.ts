@@ -5,6 +5,7 @@ import { Server } from '@/models/Server';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { editorMiddleware } from '@/middleware/editor.middleware';
 import { generateDomainsCsv, generateServersCsv } from '@/services/export.service';
+import { suggestDomainsForIp } from '@/services/domain-discovery.service';
 
 const router = Router();
 
@@ -36,6 +37,25 @@ router.post('/', editorMiddleware, async (req, res) => {
     res.status(201).json(newServer);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/suggest-domains', authMiddleware, async (req, res) => {
+  try {
+    const ipAddress = typeof req.query.ipAddress === 'string' ? req.query.ipAddress.trim() : '';
+    console.log("Recherche de suggestions pour l'IP:", ipAddress);
+
+    if (!ipAddress) {
+      return res.status(400).json({ error: 'IP address requis' });
+    }
+    const suggestions = await suggestDomainsForIp(ipAddress);
+
+    res.json({
+      ipAddress,
+      suggestions
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de la récupération des suggestions de domaines"  });
   }
 });
 
