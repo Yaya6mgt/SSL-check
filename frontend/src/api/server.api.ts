@@ -36,11 +36,12 @@ export const fetchServer = async (id: number, setServer: React.Dispatch<React.Se
 
 export const postServer = async (name: string, ipAddress: string) => {
   try {
-      await apiFetch('servers', {
+      const data = await apiFetch<IServer>('servers', {
         method: 'POST',
         body: { name, ipAddress },
         token,
       });
+      return data;
   } catch (err) {
     if (err instanceof ApiError) {
       console.error(`Erreur API (${err.status}):`, err.message);
@@ -65,13 +66,13 @@ export const deleteServer = async (id: number) => {
   }
 };
 
-export const updateServer = async (id: number, name: string, ipAdress: string) => {
+export const updateServer = async (id: number, name: string, ipAddress: string) => {
   try {
-    console.log("Données envoyées à l'API:", { name, ipAdress });
-    await apiFetch(`servers/${id}`, {
+    console.log("Données envoyées à l'API:", { name, ipAddress });
+    return await apiFetch<IServer>(`servers/${id}`, {
       method: 'PUT',
       token,
-      body: { name, ipAdress }
+      body: { name, ipAddress }
     });
   } catch (err) {
     if (err instanceof ApiError) {

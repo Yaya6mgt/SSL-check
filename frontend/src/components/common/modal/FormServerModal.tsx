@@ -1,4 +1,5 @@
 import { Modal } from "../Modal";
+import DomainSuggestionsDropdown from "./DomainSuggestionsDropdown";
 
 interface FormServerModalProps {
   isOpen: boolean;
@@ -9,6 +10,9 @@ interface FormServerModalProps {
   serverData: { name: string, ipAddress: string };
   setServerData: React.Dispatch<React.SetStateAction<{ name: string, ipAddress: string }>>;
   isEdit?: boolean;
+  serverId?: number | null;
+  selectedHostnames: string[];
+  onSelectedHostnamesChange: (hostnames: string[]) => void;
 }
 
 function FormServerModal({
@@ -19,7 +23,10 @@ function FormServerModal({
   loading,
   serverData,
   setServerData,
-  isEdit = false
+  isEdit = false,
+  serverId = null,
+  selectedHostnames,
+  onSelectedHostnamesChange
 }: FormServerModalProps) {
   return (
     <Modal
@@ -50,6 +57,16 @@ function FormServerModal({
             onChange={e => setServerData({...serverData, ipAddress: e.target.value})}
           />
         </div>
+
+        <DomainSuggestionsDropdown
+          ipAddress={serverData.ipAddress}
+          serverId={serverId}
+          className="mt-2"
+          selectedHostnames={selectedHostnames}
+          onSelectedHostnamesChange={onSelectedHostnamesChange}
+          hiddenSources={['database']}
+        />
+
         <div className="pt-2">
           <button
             type="submit"

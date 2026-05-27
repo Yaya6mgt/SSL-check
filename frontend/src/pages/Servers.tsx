@@ -9,6 +9,7 @@ import { initialDomainState } from "@/types/domain.type";
 import type { IServer } from "@/types/server.type";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { postDomainsBulk } from "@/api/domain.api";
 
 export default function Servers() {
   const [servers, setServers] = useState<IServer[]>([]);
@@ -26,6 +27,7 @@ export default function Servers() {
   const [newDomain, setNewDomain] = useState<NewDomainState>(initialDomainState);
   const [selectedServerId, setSelectedServerId] = useState<number | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [selectedHostnames, setSelectedHostnames] = useState<string[]>([]);
 
   useEffect(() => { fetchServers(setServers, setLoading); }, []);
 
@@ -90,9 +92,14 @@ export default function Servers() {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      await updateServer(selectedServerId!, editServerData.name, editServerData.ipAddress);
+      const updatedServer = await updateServer(selectedServerId!, editServerData.name, editServerData.ipAddress);
+
+      if (updatedServer && selectedHostnames.length > 0) {
+        await postDomainsBulk(updatedServer.id, selectedHostnames);
+      }
 
       setIsModalServerOpen(false);
+      setSelectedHostnames([]);
       fetchServers(setServers, setLoading);
     } catch {
       alert("Erreur lors de la mise à jour");
@@ -105,9 +112,15 @@ export default function Servers() {
     e.preventDefault();
     setLoading(true);
     try {
-      await postServer(editServerData.name, editServerData.ipAddress);
+      const createdServer = await postServer(editServerData.name, editServerData.ipAddress);
+
+      if (createdServer && selectedHostnames.length > 0) {
+        await postDomainsBulk(createdServer.id, selectedHostnames);
+      }
+
       setIsModalServerOpen(false);
       setEditServerData({ name: '', ipAddress: '' });
+      setSelectedHostnames([]);
       fetchServers(setServers, setLoading);
     } catch {
       alert("Erreur lors de l'ajout du serveur");
@@ -116,6 +129,7 @@ export default function Servers() {
 
   const openEditModal = (id: number) => {
     setSelectedServerId(id);
+    setSelectedHostnames([]);
     const serverToEdit = servers.find(server => server.id === id);
     setEditServerData({
       name: serverToEdit?.name || "",
@@ -127,6 +141,7 @@ export default function Servers() {
 
   const openAddModal = () => {
     setEditServerData({ name: '', ipAddress: '' });
+    setSelectedHostnames([]);
     setIsEditModal(false);
     setIsModalServerOpen(true);
   }
@@ -199,6 +214,9 @@ export default function Servers() {
         serverData={editServerData}
         setServerData={setEditServerData}
         isEdit={isEditModal}
+        serverId={selectedServerId}
+        selectedHostnames={selectedHostnames}
+        onSelectedHostnamesChange={setSelectedHostnames}
       />
 
       <FormDomainServerModal

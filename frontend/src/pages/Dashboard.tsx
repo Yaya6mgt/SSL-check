@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import { calculateDays, getStatusConfig } from '@/utils/status';
 import type { IServer } from '@/types/server.type';
 import type { Domain } from '@/types/domain.type';
-import { apiFetch } from '@/utils/api';
 import { ServerHealthBar } from '@/components/ServerHealthbar';
 import { Download, Plus, Server, Trash2 } from 'lucide-react';
-import { fetchServers } from '@/api/server.api';
+import { deleteServer, fetchServers, postServer } from '@/api/server.api';
 import FormServerModal from '@/components/common/modal/FormServerModal';
 import { ServerFilter } from '@/components/filter/ServerFilter';
 import SearchBar from '@/components/common/utils/SearchBar';
-
+import { postDomainsBulk } from '@/api/domain.api';
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Dashboard() {
@@ -18,6 +17,7 @@ export default function Dashboard() {
   const [isModalServerlOpen, setIsModalServerlOpen] = useState(false);
   const [newServer, setNewServer] = useState({ name: '', ipAddress: '' });
   const [loading, setLoading] = useState(false);
+  const [selectedHostnames, setSelectedHostnames] = useState<string[]>([]);
 
   const [search, setSearch] = useState("");
   const [selectedServerIds, setSelectedServerIds] = useState<number[]>([]);
@@ -40,12 +40,16 @@ export default function Dashboard() {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiFetch('servers', {
-        method: 'POST',
-        body: newServer
-      });
+      const createdServer = await postServer(newServer.name, newServer.ipAddress);
+
+
+      if (createdServer && selectedHostnames.length > 0) {
+        await postDomainsBulk(createdServer.id, selectedHostnames);
+      }
+
       setIsModalServerlOpen(false);
       setNewServer({ name: '', ipAddress: '' });
+      setSelectedHostnames([]);
       fetchServers(setServers, setLoading);
     } catch {
       alert("Erreur lors de l'ajout du serveur");
@@ -59,7 +63,7 @@ export default function Dashboard() {
     if (!window.confirm(`Supprimer le serveur "${serverName}" et tous ses domaines ?`)) return;
 
     try {
-      await apiFetch(`servers/${serverId}`, { method: 'DELETE' });
+      await deleteServer(serverId);
       fetchServers(setServers, setLoading);
     } catch {
       alert("Erreur lors de la suppression du serveur");
@@ -120,7 +124,10 @@ export default function Dashboard() {
         <h1 className="text-3xl font-extrabold text-slate-900">Infrastructure SSL</h1>
         <p className="text-slate-500">Statut synthétique des serveurs Onlineformapro</p>
         <button
-          onClick={() => setIsModalServerlOpen(true)}
+          onClick={() => {
+            setSelectedHostnames([]);
+            setIsModalServerlOpen(true);
+          }}
           className="flex items-center mt-2 gap-2 bg-secondary hover:bg-secondary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-secondary-200 active:scale-95 cursor-pointer"
         >
           <Plus size={20} />
@@ -207,11 +214,16 @@ export default function Dashboard() {
       </div>
       <FormServerModal
         isOpen={isModalServerlOpen}
-        onClose={() => setIsModalServerlOpen(false)}
+        onClose={() => {
+          setIsModalServerlOpen(false);
+          setSelectedHostnames([]);
+        }}
         onSubmit={handleAddServer}
         loading={loading}
         serverData={newServer}
         setServerData={setNewServer}
+        selectedHostnames={selectedHostnames}
+        onSelectedHostnamesChange={setSelectedHostnames}
       />
     </div>
   );

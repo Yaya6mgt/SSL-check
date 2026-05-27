@@ -6,7 +6,7 @@ import type { IServer } from '@/types/server.type';
 import { Plus, ArrowLeft, Trash2, Pencil, Download } from 'lucide-react';
 import { fetchServer, updateServer } from '@/api/server.api';
 import FormDomainModal from '@/components/common/modal/FormDomainModal';
-import { checkDomain, deleteDomain, postDomain } from '@/api/domain.api';
+import { checkDomain, deleteDomain, postDomainsBulk } from '@/api/domain.api';
 import { RefreshButton } from '@/components/common/utils/RefreshButton';
 import FormServerModal from '@/components/common/modal/FormServerModal';
 import { DomainsFilters } from '@/components/filter/DomainsFilter';
@@ -21,11 +21,11 @@ export default function ServerDetail() {
   const [refreshingId, setRefreshingId] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newDomainName, setNewDomainName] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [isEditServerModalOpen, setIsEditServerModalOpen] = useState(false);
   const [editServerData, setEditServerData] = useState({ name: '', ipAddress: '' });
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [selectedHostnames, setSelectedHostnames] = useState<string[]>([]);
 
   const [filterDays, setFilterDays] = useState<[number, number]>([0, 200]);
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'VALID' | 'ERROR' | 'EXPIRING'>('ALL');
@@ -69,13 +69,11 @@ export default function ServerDetail() {
     fetchData();
   }, [id]);
 
-  const handleAddDomain = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddDomains = async (hostnames: string[]) => {
     setAddLoading(true);
     try {
-      await postDomain(newDomainName, id!);
+      await postDomainsBulk(Number(id), hostnames);
       setIsModalOpen(false);
-      setNewDomainName('');
       fetchServer(Number(id), setServer, setLoading);
     } catch {
       alert("Erreur lors de l'ajout du domaine");
@@ -121,9 +119,14 @@ export default function ServerDetail() {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      await updateServer(Number(id), editServerData.name, editServerData.ipAddress);
+      const updatedServer = await updateServer(Number(id), editServerData.name, editServerData.ipAddress);
+
+      if (updatedServer && selectedHostnames.length > 0) {
+        await postDomainsBulk(updatedServer.id, selectedHostnames);
+      }
 
       setIsEditServerModalOpen(false);
+      setSelectedHostnames([]);
       fetchServer(Number(id), setServer, setLoading);
     } catch {
       alert("Erreur lors de la mise à jour");
@@ -165,6 +168,7 @@ export default function ServerDetail() {
   const openEditServerModal = () => {
     if (server) {
       setEditServerData({ name: server.name, ipAddress: server.ipAddress });
+      setSelectedHostnames([]);
       setIsEditServerModalOpen(true);
     }
   };
@@ -277,23 +281,29 @@ export default function ServerDetail() {
         )}
       </div>
 
-      <FormDomainModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        server={server}
-        handleAddDomain={handleAddDomain}
-        addLoading={addLoading}
-        newDomainName={newDomainName}
-        setNewDomainName={setNewDomainName}
-      />
+      {isModalOpen ? (
+        <FormDomainModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          server={server}
+          handleAddDomains={handleAddDomains}
+          addLoading={addLoading}
+        />
+      ) : null}
       <FormServerModal
         isOpen={isEditServerModalOpen}
-        onClose={() => setIsEditServerModalOpen(false)}
+        onClose={() => {
+          setIsEditServerModalOpen(false);
+          setSelectedHostnames([]);
+        }}
         onSubmit={handleUpdateServer}
         loading={updateLoading}
         serverData={editServerData}
         setServerData={setEditServerData}
         isEdit
+        serverId={server?.id ?? null}
+        selectedHostnames={selectedHostnames}
+        onSelectedHostnamesChange={setSelectedHostnames}
       />
     </div>
   );

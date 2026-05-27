@@ -2,6 +2,7 @@ import { ApiError, apiFetch } from "@/utils/api";
 import type { Domain } from "@/types/domain.type";
 import type { ISslCheck } from "@/types/sslcheck.type";
 import { getToken } from "@/utils/localStorage";
+import type { DomainSuggestion } from "@/types/domain-suggestion.type";
 
 const token = getToken;
 
@@ -52,6 +53,26 @@ export const postDomain = async (hostname: string, serverId: string) => {
   }
 };
 
+export const postDomainsBulk = async (serverId: number, hostnames: string[]) => {
+  try {
+    return await apiFetch('domains/bulk', {
+      method: 'POST',
+      body: {
+        serverId,
+        hostnames
+      },
+      token,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+    throw err;
+  }
+};
+
 export const updateDomain = async (domainId: number, hostname: string, serverId: string) => {
   try {
       await apiFetch(`domains/${domainId}`, {
@@ -80,6 +101,22 @@ export const deleteDomainById = async (domainId: number) => {
     });
   } catch {
     alert("Erreur lors de la suppression du domaine");
+  }
+};
+
+export const suggestDomains = async (ipAddress: string) => {
+  try {
+    const data = await apiFetch<{ ipAddress: string; suggestions: DomainSuggestion[] }>(`servers/suggest-domains?ipAddress=${encodeURIComponent(ipAddress)}`, {
+      token,
+    });
+    return data || { ipAddress, suggestions: [] };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      console.error(`Erreur API (${err.status}):`, err.message);
+    } else {
+      console.error("Erreur inconnue:", err);
+    }
+    return { ipAddress, suggestions: [] };
   }
 };
 
