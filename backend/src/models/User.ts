@@ -15,7 +15,7 @@ export class User extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'users_email_unique',
     validate: { isEmail: true }
   })
   declare email: string;

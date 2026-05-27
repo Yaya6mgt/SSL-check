@@ -6,6 +6,7 @@ import { authMiddleware } from '@/middleware/auth.middleware';
 import { editorMiddleware } from '@/middleware/editor.middleware';
 import { generateDomainsCsv, generateServersCsv } from '@/services/export.service';
 import { suggestDomainsForIp } from '@/services/domain-discovery.service';
+import { HttpError } from '@/utils/http-error';
 
 const router = Router();
 
@@ -55,7 +56,14 @@ router.get('/suggest-domains', authMiddleware, async (req, res) => {
       suggestions
     });
   } catch (error) {
-    res.status(500).json({ error: "Erreur lors de la récupération des suggestions de domaines"  });
+    if (error instanceof HttpError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    return res.status(500).json({
+      error: "Erreur lors de la récupération des suggestions de domaines",
+      details: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 

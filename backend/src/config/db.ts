@@ -27,23 +27,28 @@ export const sequelize = new Sequelize({
 });
 
 export async function connectDB() {
-    let connected = false;
-    let attempts = 0;
+  let connected = false;
+  let attempts = 0;
 
-    while (!connected && attempts < 10) {
-        try {
-            await sequelize.authenticate();
-            console.log('Connexion à MySQL réussie !');
-            await sequelize.sync({ alter: true });
-            connected = true;
-        } catch (error) {
-            attempts++;
-            console.log(`Attente de MySQL (tentative ${attempts}/10)...`);
-            await new Promise(res => setTimeout(res, 5000));
-        }
+  while (!connected && attempts < 10) {
+    try {
+      await sequelize.authenticate();
+      await sequelize.sync({ alter: true });
+      console.log('Connexion à MySQL réussie et schéma synchronisé !');
+      connected = true;
+    } catch (error) {
+      const dbError = error as { code?: string; original?: { code?: string } };
+      if (dbError.code === 'ER_TOO_MANY_KEYS' || dbError.original?.code === 'ER_TOO_MANY_KEYS') {
+        throw new Error("La synchronisation du schéma a échoué à cause de trop d'index MySQL sur une table. Supprime le volume de la base de données ou nettoie les index en trop, puis relance Docker.");
+       } else {
+        attempts++;
+        console.error(`Échec MySQL ou synchronisation (tentative ${attempts}/10) :`, error);
+        console.log('Nouvelle tentative dans 5 secondes...');
+        await new Promise(res => setTimeout(res, 5000));
+      }
     }
-
     if (!connected) {
         throw new Error("Impossible de se connecter à la base de données après 10 tentatives.");
     }
+  }
 }

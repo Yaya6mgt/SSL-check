@@ -8,7 +8,7 @@ export class Domain extends Model {
   @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
   declare id: number;
 
-  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  @Column({ type: DataType.STRING, allowNull: false, unique: 'domains_hostname_unique' })
   declare hostname: string;
 
   @ForeignKey(() => Server)

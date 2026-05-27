@@ -49,6 +49,60 @@ router.post('/', editorMiddleware, async (req, res) => {
   }
 });
 
+router.post('/bulk', editorMiddleware, async (req, res) => {
+  try {
+    const { serverId, hostnames } = req.body;
+
+    if (!serverId || !Array.isArray(hostnames)) {
+      return res.status(400).json({ error: 'ServerId et liste de hostnames requis' });
+    }
+
+    const server = await Server.findByPk(Number(serverId));
+    if (!server) {
+      return res.status(404).json({ error: 'Serveur introuvable' });
+    }
+
+    const normalizedHostnames = [...new Set(
+      hostnames
+        .filter((hostname: unknown): hostname is string => typeof hostname === 'string')
+        .map((hostname: string) => hostname.trim().toLowerCase())
+        .filter(Boolean)
+    )];
+
+    if (normalizedHostnames.length === 0) {
+      return res.status(400).json({ error: 'Aucun domaine à ajouter' });
+    }
+
+    const createdDomains = [];
+    const skippedDomains = [];
+
+    for (const hostname of normalizedHostnames) {
+      const [domain, created] = await Domain.findOrCreate({
+        where: { hostname },
+        defaults: {
+          hostname,
+          serverId: Number(serverId)
+        }
+      });
+
+      if (created) {
+        await performAndSaveSslCheck(domain);
+        createdDomains.push(domain);
+      } else {
+        skippedDomains.push(domain.hostname);
+      }
+    }
+
+    return res.status(201).json({
+      message: 'Domaines traités avec succès',
+      created: createdDomains.map(domain => ({ id: domain.id, hostname: domain.hostname })),
+      skipped: skippedDomains
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/check-all', editorMiddleware, async (req, res) => {
   try {
     const domains = await Domain.findAll();
