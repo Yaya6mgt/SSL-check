@@ -8,6 +8,10 @@ RUN npm install
 
 # Copie du code et build
 COPY . .
+
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 RUN npm run build
 
 # Serveur Nginx pour la production
